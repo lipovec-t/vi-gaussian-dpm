@@ -19,7 +19,7 @@ def eta_and_logparteta(tau, sigma_U):
     expec_2 = np.empty(T)
     for t in range(T):
         # TODO: something could be wrong here
-        expec_1[t,:] = np.matmul(np.linalg.inv(np.eye(K)),tau[t,:-1]) / tau[t,-1]
+        expec_1[t,:] = np.matmul(np.linalg.inv(sigma_U),tau[t,:-1]) / tau[t,-1]
         sigma_tau = np.linalg.inv(sigma_U) / tau[t,-1]
         temp = sigma_tau + np.diag(expec_1[t,:]**2)
         expec_2[t] = np.trace(np.multiply(temp, sigma_U)) * 0.5

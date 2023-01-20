@@ -39,23 +39,28 @@ true_assignment = np.zeros((N,T_true))
 for i in range(N):
     true_assignment[i,indicator_array[i]] = 1
 
-# initialization 
-T = 2
-iterations = 30
+# initialization
+# NOTE: T has to be higher than the true number of clusters, even when it's known (figure out why) 
+T = 30
+iterations = 500
 phi_init_version = 3
 if phi_init_version == 1:
     phi = 1/T * np.ones((N,T))
     num_permutations = 1
 elif phi_init_version == 2:
-    phi = true_assignment
+    phi = np.zeros((N,T))
+    phi[:,:T_true] = true_assignment
     num_permutations = 1
 elif phi_init_version == 3:
     np.random.seed(1337)
     num_permutations = 10
-    rand_indicators = (np.random.randint(0,T,N) for i in range(num_permutations))
-    phi = np.zeros((N,T_true))
+    rand_indicators = [np.random.randint(0,T,N) for i in range(num_permutations)]
+    phi = np.zeros((N,T))
     for i in range(N):
-        phi[i,rand_indicators[i]] = 1
+        phi[i,rand_indicators[1][i]] = 1
+elif phi_init_version == 4:
+    T = N
+    phi = np.eye(N)
 
 gamma = vu.update_gamma(phi,alpha)
 tau = vu.update_tau(x,lamda,phi)
