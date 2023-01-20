@@ -43,7 +43,7 @@ for i in range(N):
 # NOTE: T has to be higher than the true number of clusters, even when it's known (figure out why) 
 T = 30
 iterations = 500
-phi_init_version = 3
+phi_init_version = 4
 if phi_init_version == 1:
     phi = 1/T * np.ones((N,T))
     num_permutations = 1
@@ -79,8 +79,18 @@ for i in range(iterations):
     if i>0 and np.abs(elbo[i]-elbo[i-1]) < 0.001:
         break
 
+# postprocessing
+# TODO: figure out which cluster index corresponds to cluster weights
+
+# MAP estimate of the cluster assignements
+estimated_indicator_array = np.argmax(phi,axis=1)
+
+# delete empty clusters
+cluster_indicators = np.unique(estimated_indicator_array)
+#tau = tau[cluster_indicators, :]
+
 # estimate of the cluster weights
-V = np.divide(gamma[:,1],np.sum(gamma,axis=1))
+V = np.divide(gamma[:,0],np.sum(gamma,axis=1))
 pi = np.zeros(np.shape(V))
 pi[0] = V[0]
 for i in range (1,T):
@@ -94,8 +104,7 @@ estimated_cluster_means = np.zeros((T,K))
 for t in range(T):
     estimated_cluster_means[t,:] = tau[t,:-1]/tau[t,-1]
 
-# MAP estimate of the cluster assignements
-estimated_indicator_array = np.argmax(phi,axis=1)
+
 
 # Sample mean of the clusters
 cluster_average = np.zeros((T, K))

@@ -19,8 +19,8 @@ def update_gamma(phi, alpha):
         #TODO: use np.cumsum instead if possible
         temp[:,i-1] = np.sum(phi, axis = 1, where = indices_to_sum)
     gamma[:-1,1] = alpha*np.ones(T-1) + np.sum(temp, axis=0)
-    gamma[-1,:] = 1
-    # gamma = gamma[:-1,:]
+    # NOTE: overwriting the last gamma entry can be neglected
+    #gamma[-1,:] = np.array([1, 0.001])
     return gamma
 
 def update_tau(x, lamda, phi):
