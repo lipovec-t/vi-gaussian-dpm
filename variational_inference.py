@@ -80,14 +80,13 @@ for i in range(iterations):
         break
 
 # postprocessing
-# TODO: figure out which cluster index corresponds to cluster weights
+# TODO: finish this, include RMSE of cluster means, adapt plots
 
 # MAP estimate of the cluster assignements
 estimated_indicator_array = np.argmax(phi,axis=1)
 
 # delete empty clusters
 cluster_indicators = np.unique(estimated_indicator_array)
-#tau = tau[cluster_indicators, :]
 
 # estimate of the cluster weights
 V = np.divide(gamma[:,0],np.sum(gamma,axis=1))
@@ -103,8 +102,6 @@ for i in range (1,T):
 estimated_cluster_means = np.zeros((T,K))   
 for t in range(T):
     estimated_cluster_means[t,:] = tau[t,:-1]/tau[t,-1]
-
-
 
 # Sample mean of the clusters
 cluster_average = np.zeros((T, K))
