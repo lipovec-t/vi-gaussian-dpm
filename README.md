@@ -1,10 +1,10 @@
 # Variational Inference with Gaussian Dirichlet Process Mixtures
 
 ## Model
-$$
-x_n = \theta_n + u_n
-$$
+$$x_n = \theta_n + u_n$$
+
 with
+
 $$
 u_n \sim \mathcal{N}\!\left(0, \Sigma_u\right)\\[0.2cm]
 \theta \sim f_\text{DP}(G, \alpha)\\[0.2cm]
