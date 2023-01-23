@@ -1,4 +1,5 @@
 import numpy as np
+import timeit
 import matplotlib.pyplot as plt
 #import scipy as sp
 #from scipy.special import digamma
@@ -7,7 +8,7 @@ import variational_updates as vu
 from elbo import compute_elbo
 
 # random seed for testing purposes
-np.random.seed(1)
+np.random.seed(255)
 
 # model parameters
 K = 2
@@ -17,20 +18,20 @@ sigma_G = 5*np.eye(K)
 # mixture distribution 
 mu_U    = np.zeros(K)
 # TODO: sigma_G must be a scaled version of sigma_U in our conjugate model -> clarify this (see ExpFam_Chap2_page39)
-sigma_U = 2*np.eye(K)
+sigma_U = 1*np.eye(K)
 # measurement noise
 mu_V    = np.zeros(K)
 sigma_V = np.eye(K)
 
 # sample size
-N = 40
+N = 20
 
 # hyperparameters
 lamda = np.empty(K+1)
 lamda1_temp = np.matmul(np.linalg.inv(sigma_U), sigma_G)
 lamda[-1] = 1/lamda1_temp[0,0]
 lamda[:-1] = lamda[-1]*mu_G
-alpha = 0.8 # concentration parameter - higher alpha more clusters
+alpha = 1 # concentration parameter - higher alpha more clusters
 
 # generate data
 indicator_array, cluster_means, x, y = generate_data(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, True)
@@ -43,7 +44,7 @@ for i in range(N):
 # NOTE: T has to be higher than the true number of clusters, even when it's known (figure out why) 
 T = 30
 iterations = 500
-phi_init_version = 4
+phi_init_version = 1
 if phi_init_version == 1:
     phi = 1/T * np.ones((N,T))
     num_permutations = 1
@@ -61,6 +62,9 @@ elif phi_init_version == 3:
 elif phi_init_version == 4:
     T = N
     phi = np.eye(N)
+    
+# start timer
+t_0 = timeit.default_timer()
 
 gamma = vu.update_gamma(phi,alpha)
 tau = vu.update_tau(x,lamda,phi)
@@ -79,14 +83,19 @@ for i in range(iterations):
     if i>0 and np.abs(elbo[i]-elbo[i-1]) < 0.001:
         break
 
+# end timer
+t_1 = timeit.default_timer()
+
 # postprocessing
-# TODO: finish this, include RMSE of cluster means, adapt plots
+# compute elapsed time
+runtime = t_1 - t_0
 
 # MAP estimate of the cluster assignements
 estimated_indicator_array = np.argmax(phi,axis=1)
 
 # delete empty clusters
 cluster_indicators = np.unique(estimated_indicator_array)
+T_estimated = cluster_indicators.size
 
 # estimate of the cluster weights
 V = np.divide(gamma[:,0],np.sum(gamma,axis=1))
@@ -100,8 +109,8 @@ for i in range (1,T):
 
 # MMSE estimate of the cluster means
 estimated_cluster_means = np.zeros((T,K))   
-for t in range(T):
-    estimated_cluster_means[t,:] = tau[t,:-1]/tau[t,-1]
+estimated_cluster_means = tau[:,:-1]/np.repeat(tau[:,-1,np.newaxis], 1, axis=1)
+estimated_cluster_means = estimated_cluster_means[cluster_indicators, :]
 
 # Sample mean of the clusters
 cluster_average = np.zeros((T, K))
@@ -109,19 +118,24 @@ counts = np.zeros(T)
 for i in range(N):
     cluster_average[estimated_indicator_array[i],:] += x[i]
     counts[estimated_indicator_array[i]] += 1
+cluster_average = cluster_average[cluster_indicators, :]
+counts = counts[cluster_indicators]
 counts = np.repeat(counts[:,np.newaxis], K, axis=1)
 cluster_average = np.divide(cluster_average, counts)
 
 # Plot
+# TODO: contour plot of posterior
+plot_cluster_indicators = np.arange(T_estimated)
+mapper = lambda x: np.where(cluster_indicators == x)[0]
+plot_estimated_indicator_array = list(map(mapper, estimated_indicator_array))
 plt.figure()
-plt.title("Clustering - MMSE Mean")   
-colormap = plt.cm.get_cmap('tab20', T)
-plt.scatter(estimated_cluster_means[:,0], estimated_cluster_means[:,1], c = colormap(range(T)), marker = "o")
-plt.scatter(x[:,0], x[:,1], c = colormap(estimated_indicator_array), marker = '.')
+plt.title("Clustering - MMSE Mean")
+if T_estimated > 10:
+    print('More clusters than colors')
+colormap = plt.cm.get_cmap('tab20', 10)
+plt.scatter(estimated_cluster_means[:,0], estimated_cluster_means[:,1], c = colormap(plot_cluster_indicators), marker = "o")
+plt.scatter(x[:,0], x[:,1], c = colormap(plot_estimated_indicator_array), marker = '.')
 plt.figure()
 plt.title("Clustering - Cluster Sample Mean")   
-colormap = plt.cm.get_cmap('tab20', T)
-plt.scatter(cluster_average[:,0], cluster_average[:,1], c = colormap(range(T)), marker = "o")
-plt.scatter(x[:,0], x[:,1], c = colormap(estimated_indicator_array), marker = '.')
-# plt.xlim([-3, 5])
-# plt.ylim([-2, 4])
+plt.scatter(cluster_average[:,0], cluster_average[:,1], c = colormap(plot_cluster_indicators), marker = "o")
+plt.scatter(x[:,0], x[:,1], c = colormap(plot_estimated_indicator_array), marker = '.')

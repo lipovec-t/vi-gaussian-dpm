@@ -12,6 +12,9 @@ def generate_data(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, plot):
     num_clusters = max(indicator_array)+1
     cluster_means = G0.rvs(num_clusters)
     
+    if num_clusters == 1:
+        cluster_means = np.repeat(cluster_means[np.newaxis,:], 1, axis = 0)
+    
     # Dirichlet process mixture
     x = np.empty((N,2))
     for i in range(N):
@@ -28,7 +31,5 @@ def generate_data(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, plot):
         plt.title("Data")
         plt.scatter(cluster_means[:,0], cluster_means[:,1], c = colormap(range(num_clusters)), marker = "o")
         plt.scatter(x[:,0], x[:,1], c = colormap(indicator_array), marker = '.')
-        # plt.xlim([-3, 5])
-        # plt.ylim([-2, 4])
     
     return indicator_array, cluster_means, x, y
