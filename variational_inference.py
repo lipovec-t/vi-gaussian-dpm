@@ -45,7 +45,7 @@ for i in range(N):
 T = 30
 iterations = 500
 elbo_final = -np.inf
-phi_init_version = 3
+phi_init_version = 4
 if phi_init_version == 1:
     phi_init = 1/T * np.ones((N,T))
     num_permutations = 1
@@ -55,12 +55,13 @@ elif phi_init_version == 2:
     num_permutations = 1
 elif phi_init_version == 3:
     np.random.seed(1337)
-    num_permutations = 10
+    num_permutations = 1000
     rand_indicators = [np.random.randint(0,T,N) for i in range(num_permutations)]
     phi_init = np.zeros((N,T))
 elif phi_init_version == 4:
     T = N
     phi_init = np.eye(N)
+    num_permutations = 1
     
 # start timer
 t_0 = timeit.default_timer()
