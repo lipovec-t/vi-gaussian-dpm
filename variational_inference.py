@@ -8,7 +8,7 @@ import variational_updates as vu
 from elbo import compute_elbo
 
 # random seed for testing purposes
-np.random.seed(255)
+np.random.seed(255) 
 
 # model parameters
 K = 2
@@ -24,7 +24,7 @@ mu_V    = np.zeros(K)
 sigma_V = np.eye(K)
 
 # sample size
-N = 20
+N = 50
 
 # hyperparameters
 lamda = np.empty(K+1)
@@ -44,44 +44,52 @@ for i in range(N):
 # NOTE: T has to be higher than the true number of clusters, even when it's known (figure out why) 
 T = 30
 iterations = 500
-phi_init_version = 1
+elbo_final = -np.inf
+phi_init_version = 3
 if phi_init_version == 1:
-    phi = 1/T * np.ones((N,T))
+    phi_init = 1/T * np.ones((N,T))
     num_permutations = 1
 elif phi_init_version == 2:
-    phi = np.zeros((N,T))
-    phi[:,:T_true] = true_assignment
+    phi_init = np.zeros((N,T))
+    phi_init[:,:T_true] = true_assignment
     num_permutations = 1
 elif phi_init_version == 3:
     np.random.seed(1337)
     num_permutations = 10
     rand_indicators = [np.random.randint(0,T,N) for i in range(num_permutations)]
-    phi = np.zeros((N,T))
-    for i in range(N):
-        phi[i,rand_indicators[1][i]] = 1
+    phi_init = np.zeros((N,T))
 elif phi_init_version == 4:
     T = N
-    phi = np.eye(N)
+    phi_init = np.eye(N)
     
 # start timer
 t_0 = timeit.default_timer()
 
-gamma = vu.update_gamma(phi,alpha)
-tau = vu.update_tau(x,lamda,phi)
-
 # variational updates
 elbo = np.zeros(iterations)
-for i in range(iterations):
-    # TODO: save variational parameters and investigate convergence of parameters (instead of ELBO)
-    # TODO: compute all necessary expectations with functions
-    # compute variational updates
-    phi = vu.update_phi(x, gamma, tau, lamda, sigma_U)
-    gamma = vu.update_gamma(phi,alpha)
-    tau = vu.update_tau(x,lamda,phi)
-    # compute elbo
-    elbo[i] = compute_elbo(alpha, lamda, x, gamma, phi, tau, sigma_U, mu_G, sigma_G)
-    if i>0 and np.abs(elbo[i]-elbo[i-1]) < 0.001:
-        break
+for j in range(num_permutations):
+    if phi_init_version == 3:
+        for k in range(N):
+            phi_init[k,rand_indicators[j][k]] = 1  
+    gamma_temp = vu.update_gamma(phi_init,alpha)
+    tau_temp = vu.update_tau(x,lamda,phi_init)
+    for i in range(iterations):
+        # TODO: save variational parameters and investigate convergence of parameters (instead of ELBO)
+        # TODO: compute all necessary expectations with functions
+        # compute variational updates
+        phi_temp = vu.update_phi(x, gamma_temp, tau_temp, lamda, sigma_U)
+        gamma_temp = vu.update_gamma(phi_temp, alpha)
+        tau_temp = vu.update_tau(x, lamda, phi_temp)
+        # compute elbo
+        elbo[i] = compute_elbo(alpha, lamda, x, gamma_temp, phi_temp, tau_temp, sigma_U, mu_G, sigma_G)
+        if i>0 and np.abs(elbo[i]-elbo[i-1]) < 0.001:
+            break
+        
+    if elbo[i] > elbo_final:
+        elbo_final = elbo[i]
+        tau = tau_temp
+        gamma = gamma_temp
+        phi = phi_temp
 
 # end timer
 t_1 = timeit.default_timer()

@@ -42,6 +42,7 @@ def compute_elbo(alpha, lamda, x, gamma, phi, tau, sigma_U, mu_G, sigma_G):
         #TODO: use np.cumsum instead if possible
         temp[:,i-1] = np.sum(phi, axis = 1, where = indices_to_sum)
     C_2 = np.matmul(temp, expec.log_1minusV(gamma))
+
     C = np.sum(C_1 + C_2)
     
     # Term D
