@@ -2,10 +2,13 @@
 
 ## Model
 $$x_n = \theta_n + u_n$$
+
 with
+
 $$u_n \sim \mathcal{N}\!\left(0, \Sigma_u\right)\\[0.2cm]
 \theta \sim f_\text{DP}(G, \alpha)\\[0.2cm]
 \theta_l^* \sim \mathcal{N}\!\left(\mu_G, \Sigma_G\right)$$
+
 This yields a mixture distribution in the form of
 $$f(x_n|f_\text{DP}) = \sum_{l=1}^\infty \pi_l \; \mathcal{N}\!\left(x_n;\theta_l^*, \Sigma_u\right)$$
 where the mixture weights $\pi_l$ and the Gaussian cluster means $\theta_l^*$ are determined by the Dirichlet Process (DP).
