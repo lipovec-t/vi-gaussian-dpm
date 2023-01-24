@@ -28,11 +28,19 @@ def update_tau(x, lamda, phi):
     T = phi.shape[1]
     K = x.shape[1]
     tau = np.empty((T,K+1))
-    for t in range(T):
-        phi_t = phi[:,t]
-        weighted_data = np.multiply(x,phi_t[:,np.newaxis])
-        tau[t,:-1] = lamda[:-1]+np.sum(weighted_data,axis=0)
-        tau[t,-1]=lamda[-1]+np.sum(phi_t)
+    # tau_1 = np.empty((T,K+1))
+    # for t in range(T):
+    #     phi_t = phi[:,t]
+    #     weighted_data = np.multiply(x,phi_t[:,np.newaxis])
+    #     tau_1[t,:-1] = lamda[:-1]+np.sum(weighted_data,axis=0)
+    #     tau_1[t,-1]=lamda[-1]+np.sum(phi_t)
+    # version without loop
+    phi_temp = np.repeat(phi, 2, axis=1)
+    x_temp = np.tile(x,30)
+    weighted_data = phi_temp*x_temp
+    lamda_temp = np.tile(lamda[:-1],30)
+    tau[:,:-1] = np.reshape(lamda_temp + np.sum(weighted_data, axis=0),(-1,2))
+    tau[:,-1] = lamda[-1] + np.sum(phi, axis=0)
     return tau
 
 def update_phi(x, gamma, tau, lamda, sigma_U, inv_sigma_U):
