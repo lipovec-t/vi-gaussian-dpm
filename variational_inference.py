@@ -19,9 +19,11 @@ sigma_G = 5*np.eye(K)
 mu_U    = np.zeros(K)
 # TODO: sigma_G must be a scaled version of sigma_U in our conjugate model -> clarify this (see ExpFam_Chap2_page39)
 sigma_U = 1*np.eye(K)
+inv_sigma_U = np.linalg.inv(sigma_U)
 # measurement noise
 mu_V    = np.zeros(K)
 sigma_V = np.eye(K)
+
 
 # sample size
 N = 50
@@ -45,7 +47,7 @@ for i in range(N):
 T = 30
 iterations = 500
 elbo_final = -np.inf
-phi_init_version = 4
+phi_init_version = 3
 if phi_init_version == 1:
     phi_init = 1/T * np.ones((N,T))
     num_permutations = 1
@@ -55,7 +57,7 @@ elif phi_init_version == 2:
     num_permutations = 1
 elif phi_init_version == 3:
     np.random.seed(1337)
-    num_permutations = 1000
+    num_permutations = 20
     rand_indicators = [np.random.randint(0,T,N) for i in range(num_permutations)]
     phi_init = np.zeros((N,T))
 elif phi_init_version == 4:
@@ -78,11 +80,11 @@ for j in range(num_permutations):
         # TODO: save variational parameters and investigate convergence of parameters (instead of ELBO)
         # TODO: compute all necessary expectations with functions
         # compute variational updates
-        phi_temp = vu.update_phi(x, gamma_temp, tau_temp, lamda, sigma_U)
+        phi_temp = vu.update_phi(x, gamma_temp, tau_temp, lamda, sigma_U, inv_sigma_U)
         gamma_temp = vu.update_gamma(phi_temp, alpha)
         tau_temp = vu.update_tau(x, lamda, phi_temp)
         # compute elbo
-        elbo[i] = compute_elbo(alpha, lamda, x, gamma_temp, phi_temp, tau_temp, sigma_U, mu_G, sigma_G)
+        elbo[i] = compute_elbo(alpha, lamda, x, gamma_temp, phi_temp, tau_temp, sigma_U, mu_G, sigma_G, inv_sigma_U)
         if i>0 and np.abs(elbo[i]-elbo[i-1]) < 0.001:
             break
         

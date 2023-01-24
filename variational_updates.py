@@ -35,7 +35,7 @@ def update_tau(x, lamda, phi):
         tau[t,-1]=lamda[-1]+np.sum(phi_t)
     return tau
 
-def update_phi(x, gamma, tau, lamda, sigma_U):
+def update_phi(x, gamma, tau, lamda, sigma_U, inv_sigma_U):
     N = x.shape[0]
     T = gamma.shape[0]
     phi = np.empty((N,T))
@@ -46,7 +46,7 @@ def update_phi(x, gamma, tau, lamda, sigma_U):
     B = np.zeros(T)
     B[1:] = np.cumsum(B_temp)[:-1]
     B_extended = np.repeat(B.T[np.newaxis,:], N, axis=0)
-    C_temp, D = expec.eta_and_logparteta(tau, sigma_U)
+    C_temp, D = expec.eta_and_logparteta(tau, sigma_U, inv_sigma_U)
     C = np.dot(C_temp, x.T).T
     D_extended = np.repeat(D.T[np.newaxis,:], N, axis=0)
     S = A_extended + B_extended + C - D_extended

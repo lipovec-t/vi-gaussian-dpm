@@ -9,7 +9,7 @@ def log_V(gamma):
     expec = digamma_func(gamma[:,0]) - digamma_func(gamma[:,0] + gamma[:, 1])
     return expec
 
-def eta_and_logparteta(tau, sigma_U):
+def eta_and_logparteta(tau, sigma_U, inv_sigma_U):
     # As the two expectations are always used together we have one function for both
     # NOTE: The formular for expec_2 is only valid if the off-diagonal 
     # elements of sigma_U are zero
@@ -19,8 +19,8 @@ def eta_and_logparteta(tau, sigma_U):
     expec_2 = np.empty(T)
     for t in range(T):
         # TODO: something could be wrong here
-        expec_1[t,:] = np.matmul(np.linalg.inv(sigma_U),tau[t,:-1]) / tau[t,-1]
-        sigma_tau = np.linalg.inv(sigma_U) / tau[t,-1]
+        expec_1[t,:] = np.matmul(inv_sigma_U,tau[t,:-1]) / tau[t,-1]
+        sigma_tau = inv_sigma_U / tau[t,-1]
         temp = sigma_tau + np.diag(expec_1[t,:]**2)
         expec_2[t] = np.trace(np.multiply(temp, sigma_U)) * 0.5
     return expec_1, expec_2
