@@ -47,7 +47,7 @@ for i in range(N):
 T = 30
 iterations = 500
 elbo_final = -np.inf
-phi_init_version = 1
+phi_init_version = 3
 if phi_init_version == 1:
     phi_init = 1/T * np.ones((N,T))
     num_permutations = 1
@@ -57,7 +57,7 @@ elif phi_init_version == 2:
     num_permutations = 1
 elif phi_init_version == 3:
     np.random.seed(1337)
-    num_permutations = 1000
+    num_permutations = 500
     rand_indicators = [np.random.randint(0,T,N) for i in range(num_permutations)]
     phi_init = np.zeros((N,T))
 elif phi_init_version == 4:
@@ -85,7 +85,7 @@ for j in range(num_permutations):
         tau_temp = vu.update_tau(x, lamda, phi_temp)
         # compute elbo
         elbo[i] = compute_elbo(alpha, lamda, x, gamma_temp, phi_temp, tau_temp, sigma_U, mu_G, sigma_G, inv_sigma_U)
-        if i>0 and np.abs(elbo[i]-elbo[i-1]) < 0.001:
+        if i>0 and np.abs(elbo[i]-elbo[i-1]) < 0.1:
             break
         
     if elbo[i] > elbo_final:

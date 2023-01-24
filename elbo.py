@@ -35,14 +35,19 @@ def compute_elbo(alpha, lamda, x, gamma, phi, tau, sigma_U, mu_G, sigma_G, inv_s
 
     
     # Term C
-    temp = np.zeros((N, T))
     C_1 = np.matmul(phi, expec.log_V(gamma))
-    for i in range(1,T): 
-        indices_to_sum = np.array(range(T)) >= i
-        #TODO: use np.cumsum instead if possible
-        temp[:,i-1] = np.sum(phi, axis = 1, where = indices_to_sum)
-    C_2 = np.matmul(temp, expec.log_1minusV(gamma))
-
+    # temp = np.zeros((N, T))
+    # for i in range(1,T): 
+    #     indices_to_sum = np.array(range(T)) >= i
+    #     #TODO: use np.cumsum instead if possible
+    #     temp[:,i-1] = np.sum(phi, axis = 1, where = indices_to_sum)
+    # C_21 = np.matmul(temp, expec.log_1minusV(gamma))
+    
+    #Without Loop
+    phi_temp = np.flip(np.cumsum(np.flip(phi, axis=1), axis=1), axis=1)
+    phi_temp = phi_temp[:,1:]
+    phi_temp = np.column_stack((phi_temp,np.zeros(N)))
+    C_2 = np.matmul(phi_temp, expec.log_1minusV(gamma))
     C = np.sum(C_1 + C_2)
     
     # Term D

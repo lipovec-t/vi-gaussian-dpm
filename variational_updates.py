@@ -12,15 +12,20 @@ def update_gamma(phi, alpha):
     T = phi.shape[1]
     N = phi.shape[0]
     gamma = np.empty((T,2))
+    # gamma1 = np.zeros((T,2))
     gamma[:,0] = np.ones(T) + np.sum(phi, axis = 0)
-    temp = np.zeros((N, T-1))
-    for i in range(1,T):
-        indices_to_sum = np.array(range(T)) >= i
-        #TODO: use np.cumsum instead if possible
-        temp[:,i-1] = np.sum(phi, axis = 1, where = indices_to_sum)
-    gamma[:-1,1] = alpha*np.ones(T-1) + np.sum(temp, axis=0)
-    # NOTE: overwriting the last gamma entry could be neglected but sometimes
-    # results in a runtime warning
+    
+    # temp = np.zeros((N, T-1))
+    # for i in range(1,T):
+    #     indices_to_sum = np.array(range(T)) >= i
+    #     #TODO: use np.cumsum instead if possible
+    #     temp[:,i-1] = np.sum(phi, axis = 1, where = indices_to_sum)
+    # gamma1[:-1,1] = alpha*np.ones(T-1) + np.sum(temp, axis=0)
+    # gamma1[-1,:] = np.array([1, 0.001])
+    # Without loop
+    phi_temp = np.flip(np.cumsum(np.flip(phi, axis=1), axis=1), axis=1)
+    phi_temp = phi_temp[:,1:]
+    gamma[:-1,1] = alpha*np.ones(T-1) + np.sum(phi_temp, axis=0)
     gamma[-1,:] = np.array([1, 0.001])
     return gamma
 
@@ -36,9 +41,9 @@ def update_tau(x, lamda, phi):
     #     tau_1[t,-1]=lamda[-1]+np.sum(phi_t)
     # version without loop
     phi_temp = np.repeat(phi, 2, axis=1)
-    x_temp = np.tile(x,30)
+    x_temp = np.tile(x,T)
     weighted_data = phi_temp*x_temp
-    lamda_temp = np.tile(lamda[:-1],30)
+    lamda_temp = np.tile(lamda[:-1],T)
     tau[:,:-1] = np.reshape(lamda_temp + np.sum(weighted_data, axis=0),(-1,2))
     tau[:,-1] = lamda[-1] + np.sum(phi, axis=0)
     return tau
