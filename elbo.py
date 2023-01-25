@@ -1,5 +1,4 @@
 import numpy as np
-from scipy import integrate
 from scipy.special import gamma as gamma_func
 import expectations as expec
 

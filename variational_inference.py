@@ -8,7 +8,7 @@ import variational_updates as vu
 from elbo import compute_elbo
 
 # random seed for testing purposes
-np.random.seed(255) 
+# np.random.seed(255) 
 
 # model parameters
 K = 2
@@ -18,13 +18,13 @@ sigma_G = 5*np.eye(K)
 # mixture distribution 
 mu_U    = np.zeros(K)
 # TODO: sigma_G must be a scaled version of sigma_Y in our conjugate model -> clarify this (see ExpFam_Chap2_page39)
-sigma_U = 2*np.eye(K)
+sigma_U = 1*np.eye(K)
 # measurement noise
 mu_V    = np.zeros(K)
 sigma_V = np.eye(K)
 
 # covariance matrix and inverse for CAVI
-sigma = sigma_U
+sigma = sigma_U + sigma_V
 sigma_inv = np.linalg.inv(sigma)
 # sample size
 N = 50
@@ -44,7 +44,7 @@ for i in range(N):
     true_assignment[i,indicator_array[i]] = 1
 
 # input data for cavi
-data = x
+data = y
 # initialization
 # NOTE: T has to be higher than the true number of clusters, even when it's known (figure out why) 
 T = 30
@@ -60,7 +60,7 @@ elif phi_init_version == 2:
     num_permutations = 1
 elif phi_init_version == 3:
     np.random.seed(1337)
-    num_permutations = 20
+    num_permutations = 30
     rand_indicators = [np.random.randint(0,T,N) for i in range(num_permutations)]
     phi_init = np.zeros((N,T))
 elif phi_init_version == 4:
@@ -129,7 +129,7 @@ for i in range (1,T):
 # MMSE estimate of the cluster means
 estimated_cluster_means = np.zeros((T,K))   
 estimated_cluster_means = tau[:,:-1]/np.repeat(tau[:,-1,np.newaxis], 1, axis=1)
-estimated_cluster_means = estimated_cluster_means[cluster_indicators, :]
+estimated_cluster_means_reduced = estimated_cluster_means[cluster_indicators, :]
 
 # Sample mean of the clusters
 cluster_average = np.zeros((T, K))
@@ -142,6 +142,14 @@ counts = counts[cluster_indicators]
 counts = np.repeat(counts[:,np.newaxis], K, axis=1)
 cluster_average = np.divide(cluster_average, counts)
 
+# mmse estimator for objects x
+if not np.array_equiv(sigma,sigma_U):
+    data_mean_temp = estimated_cluster_means[estimated_indicator_array,:]
+    mmse_weight = np.matmul(sigma_U,sigma_inv)
+    weighted_centered_data = np.einsum('ij,kj->ki',mmse_weight,data - data_mean_temp)
+    estimated_x = data_mean_temp + weighted_centered_data
+    # calculate mse
+    mse_x = 1/N*np.sum(np.linalg.norm(x - estimated_x,axis=1)**2)
 # Plot
 # TODO: contour plot of posterior
 plot_cluster_indicators = np.arange(T_estimated)
@@ -152,9 +160,10 @@ plt.title("Clustering - MMSE Mean")
 if T_estimated > 10:
     print('More clusters than colors')
 colormap = plt.cm.get_cmap('tab20', 10)
-plt.scatter(estimated_cluster_means[:,0], estimated_cluster_means[:,1], c = colormap(plot_cluster_indicators), marker = "o")
+plt.scatter(estimated_cluster_means_reduced[:,0], estimated_cluster_means_reduced[:,1], c = colormap(plot_cluster_indicators), marker = "o")
 plt.scatter(data[:,0], data[:,1], c = colormap(plot_estimated_indicator_array), marker = '.')
 plt.figure()
 plt.title("Clustering - Cluster Sample Mean")   
 plt.scatter(cluster_average[:,0], cluster_average[:,1], c = colormap(plot_cluster_indicators), marker = "o")
 plt.scatter(data[:,0], data[:,1], c = colormap(plot_estimated_indicator_array), marker = '.')
+
