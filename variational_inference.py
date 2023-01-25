@@ -17,20 +17,21 @@ mu_G    = np.zeros(K)
 sigma_G = 5*np.eye(K)
 # mixture distribution 
 mu_U    = np.zeros(K)
-# TODO: sigma_G must be a scaled version of sigma_U in our conjugate model -> clarify this (see ExpFam_Chap2_page39)
-sigma_U = np.eye(K)
-inv_sigma_U = np.linalg.inv(sigma_U)
+# TODO: sigma_G must be a scaled version of sigma_Y in our conjugate model -> clarify this (see ExpFam_Chap2_page39)
+sigma_U = 2*np.eye(K)
 # measurement noise
 mu_V    = np.zeros(K)
 sigma_V = np.eye(K)
 
-
+# covariance matrix and inverse for CAVI
+sigma = sigma_U
+sigma_inv = np.linalg.inv(sigma)
 # sample size
 N = 50
 
 # hyperparameters
 lamda = np.empty(K+1)
-lamda1_temp = np.matmul(np.linalg.inv(sigma_U), sigma_G)
+lamda1_temp = np.matmul(np.linalg.inv(sigma), sigma_G)
 lamda[-1] = 1/lamda1_temp[0,0]
 lamda[:-1] = lamda[-1]*mu_G
 alpha = 1 # concentration parameter - higher alpha more clusters
@@ -42,6 +43,8 @@ true_assignment = np.zeros((N,T_true))
 for i in range(N):
     true_assignment[i,indicator_array[i]] = 1
 
+# input data for cavi
+data = x
 # initialization
 # NOTE: T has to be higher than the true number of clusters, even when it's known (figure out why) 
 T = 30
@@ -80,16 +83,16 @@ for j in range(num_permutations):
         for k in range(N):
             phi_init[k,rand_indicators[j][k]] = 1  
     gamma_temp = vu.update_gamma(phi_init,alpha)
-    tau_temp = vu.update_tau(x,lamda,phi_init)
+    tau_temp = vu.update_tau(data,lamda,phi_init)
     for i in range(iterations):
         # TODO: save variational parameters and investigate convergence of parameters (instead of ELBO)
         # TODO: compute all necessary expectations with functions
         # compute variational updates
-        phi_temp = vu.update_phi(x, gamma_temp, tau_temp, lamda, sigma_U, inv_sigma_U)
+        phi_temp = vu.update_phi(data, gamma_temp, tau_temp, lamda, sigma, sigma_inv)
         gamma_temp = vu.update_gamma(phi_temp, alpha)
-        tau_temp = vu.update_tau(x, lamda, phi_temp)
+        tau_temp = vu.update_tau(data, lamda, phi_temp)
         # compute elbo
-        elbo[i] = compute_elbo(alpha, lamda, x, gamma_temp, phi_temp, tau_temp, sigma_U, mu_G, sigma_G, inv_sigma_U)
+        elbo[i] = compute_elbo(alpha, lamda, data, gamma_temp, phi_temp, tau_temp, sigma, mu_G, sigma_G, sigma_inv)
         if i>0 and np.abs(elbo[i]-elbo[i-1]) < 0.1:
             break
         
@@ -132,7 +135,7 @@ estimated_cluster_means = estimated_cluster_means[cluster_indicators, :]
 cluster_average = np.zeros((T, K))
 counts = np.zeros(T)
 for i in range(N):
-    cluster_average[estimated_indicator_array[i],:] += x[i]
+    cluster_average[estimated_indicator_array[i],:] += data[i]
     counts[estimated_indicator_array[i]] += 1
 cluster_average = cluster_average[cluster_indicators, :]
 counts = counts[cluster_indicators]
@@ -150,8 +153,8 @@ if T_estimated > 10:
     print('More clusters than colors')
 colormap = plt.cm.get_cmap('tab20', 10)
 plt.scatter(estimated_cluster_means[:,0], estimated_cluster_means[:,1], c = colormap(plot_cluster_indicators), marker = "o")
-plt.scatter(x[:,0], x[:,1], c = colormap(plot_estimated_indicator_array), marker = '.')
+plt.scatter(data[:,0], data[:,1], c = colormap(plot_estimated_indicator_array), marker = '.')
 plt.figure()
 plt.title("Clustering - Cluster Sample Mean")   
 plt.scatter(cluster_average[:,0], cluster_average[:,1], c = colormap(plot_cluster_indicators), marker = "o")
-plt.scatter(x[:,0], x[:,1], c = colormap(plot_estimated_indicator_array), marker = '.')
+plt.scatter(data[:,0], data[:,1], c = colormap(plot_estimated_indicator_array), marker = '.')
