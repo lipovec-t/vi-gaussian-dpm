@@ -18,7 +18,7 @@ sigma_G = 5*np.eye(K)
 # mixture distribution 
 mu_U    = np.zeros(K)
 # TODO: sigma_G must be a scaled version of sigma_U in our conjugate model -> clarify this (see ExpFam_Chap2_page39)
-sigma_U = 1*np.eye(K)
+sigma_U = np.array([[1,2],[3,4]])
 inv_sigma_U = np.linalg.inv(sigma_U)
 # measurement noise
 mu_V    = np.zeros(K)
@@ -47,7 +47,7 @@ for i in range(N):
 T = 30
 iterations = 500
 elbo_final = -np.inf
-phi_init_version = 3
+phi_init_version = 1
 if phi_init_version == 1:
     phi_init = 1/T * np.ones((N,T))
     num_permutations = 1
