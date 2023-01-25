@@ -18,7 +18,7 @@ sigma_G = 5*np.eye(K)
 # mixture distribution 
 mu_U    = np.zeros(K)
 # TODO: sigma_G must be a scaled version of sigma_U in our conjugate model -> clarify this (see ExpFam_Chap2_page39)
-sigma_U = np.array([[1,2],[3,4]])
+sigma_U = np.eye(K)
 inv_sigma_U = np.linalg.inv(sigma_U)
 # measurement noise
 mu_V    = np.zeros(K)
