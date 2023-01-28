@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.special import digamma
-import expectations as expec
+from . import expectations as expec
 
 # Dimensions
 # K -> dimension of data points x_n

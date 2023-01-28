@@ -1,11 +1,14 @@
-import numpy as np
+# Standard library imports
 import timeit
+
+# Third party imports
+import numpy as np
 import matplotlib.pyplot as plt
-#import scipy as sp
-#from scipy.special import digamma
-from data_generation import generate_data
-import variational_updates as vu
-from elbo import compute_elbo
+
+# Local application imports
+from data.generation import generate_data
+from vi import variational_updates as vu
+from vi.elbo import compute_elbo
 
 # random seed for testing purposes
 # np.random.seed(255) 
@@ -23,7 +26,7 @@ sigma_U = 1*np.eye(K)
 mu_V    = np.zeros(K)
 sigma_V = np.eye(K)
 # number of mc runs
-mcruns = 500
+mcruns = 10
 mse_x = np.zeros(mcruns)
 
 # covariance matrix and inverse for CAVI
@@ -184,4 +187,3 @@ runtime = t_1 - t_0
 # plt.title("Clustering - Cluster Sample Mean")   
 # plt.scatter(cluster_average[:,0], cluster_average[:,1], c = colormap(plot_cluster_indicators), marker = "o")
 # plt.scatter(data[:,0], data[:,1], c = colormap(plot_estimated_indicator_array), marker = '.')
-

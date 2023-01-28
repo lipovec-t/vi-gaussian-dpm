@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.special import gamma as gamma_func
-import expectations as expec
+from . import expectations as expec
 
 
 # ELBO calculation
