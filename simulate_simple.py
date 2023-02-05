@@ -38,20 +38,20 @@ lamda[-1] = 1/lamda1_temp[0,0]
 lamda[:-1] = lamda[-1]*mu_G
 alpha = 1 # concentration parameter - higher alpha more clusters
 
-# data
-indicator_array, cluster_assignements, cluster_means, x, y = \
-    generate_data(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, False)
-    
 # parameters for the algorithm
 phi_init_version = 1
 max_iteration = 100
 T = 20 # truncation
 
+# generate data
+indicator_array, cluster_assignements, cluster_means, data, _ = \
+    generate_data(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, False)
+
 # start timer
 t_0 = timeit.default_timer()
 # CAVI
 elbo_final, tau, gamma, phi = \
-    coordinates_ascent(x, max_iteration, phi_init_version, alpha,\
+    coordinates_ascent(data, max_iteration, phi_init_version, alpha,\
                        sigma, sigma_inv, mu_G, sigma_G, lamda, T)
 # end timer
 t_1 = timeit.default_timer()
@@ -86,7 +86,7 @@ cluster_means_est = cluster_means_est[cluster_indicators_est, :]
 cluster_average = np.zeros((T, K))
 counts = np.zeros(T)
 for i in range(N):
-    cluster_average[indicator_array_est[i],:] += x[i]
+    cluster_average[indicator_array_est[i],:] += data[i]
     counts[indicator_array_est[i]] += 1
 cluster_average = cluster_average[cluster_indicators_est, :]
 counts = counts[cluster_indicators_est]
@@ -107,10 +107,12 @@ if T_est > 10:
 colormap = plt.cm.get_cmap('tab20', 10)
 cx, cy = cluster_means_est[:,0], cluster_means_est[:,1]
 plt.scatter(cx, cy, c=colormap(plot_cluster_indicators), marker="o")
-plt.scatter(x[:,0], x[:,1], c=colormap(plot_indicator_array_est), marker='.')
+da, dy = data[:,0], data[:,1]
+plt.scatter(da, dy, c=colormap(plot_indicator_array_est), marker='.')
 # Scatter plot with sample mean of clusters
 plt.figure()
 plt.title("Clustering - Cluster Sample Mean") 
 cx, cy = cluster_average[:,0], cluster_average[:,1]   
 plt.scatter(cx, cy, c = colormap(plot_cluster_indicators), marker="o")
-plt.scatter(x[:,0], x[:,1], c=colormap(plot_indicator_array_est), marker='.')
+da, dy = data[:,0], data[:,1]
+plt.scatter(da, dy, c=colormap(plot_indicator_array_est), marker='.')
