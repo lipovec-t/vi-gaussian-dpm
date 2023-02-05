@@ -13,6 +13,11 @@ def generate_data(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, plot):
     indicator_array = crp(N, alpha)
     num_clusters = max(indicator_array)+1
     cluster_means = G0.rvs(num_clusters)
+    num_clusters = cluster_means.shape[0]
+    cluster_assignements = np.zeros((N,num_clusters))
+    # TODO: vectorize this
+    for i in range(N):
+        cluster_assignements [i,indicator_array[i]] = 1
     
     if num_clusters == 1:
         cluster_means = np.repeat(cluster_means[np.newaxis,:], 1, axis = 0)
@@ -34,7 +39,7 @@ def generate_data(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, plot):
         plt.scatter(cluster_means[:,0], cluster_means[:,1], c = colormap(range(num_clusters)), marker = "o")
         plt.scatter(x[:,0], x[:,1], c = colormap(indicator_array), marker = '.')
     
-    return indicator_array, cluster_means, x, y
+    return indicator_array, cluster_assignements, cluster_means, x, y
 
 def crp(N, alpha):
     """
