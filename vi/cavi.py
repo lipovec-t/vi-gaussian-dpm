@@ -51,7 +51,7 @@ def coordinates_ascent(data, max_iterations, initialization, alpha, sigma, sigma
 
 def _init(version, T, N, *kwargs):
     # initialization
-    # NOTE: T has to be higher than the true number of clusters, even when it's known (figure out why) 
+    # NOTE: T has to be higher than the true number of clusters
     phi_init_version = 1
     if phi_init_version == 1:
         phi_init = 1/T * np.ones((N,T))
@@ -79,17 +79,7 @@ def update_gamma(phi, alpha):
     T = phi.shape[1]
     N = phi.shape[0]
     gamma = np.empty((T,2))
-    # gamma1 = np.zeros((T,2))
     gamma[:,0] = np.ones(T) + np.sum(phi, axis = 0)
-    
-    # temp = np.zeros((N, T-1))
-    # for i in range(1,T):
-    #     indices_to_sum = np.array(range(T)) >= i
-    #     #TODO: use np.cumsum instead if possible
-    #     temp[:,i-1] = np.sum(phi, axis = 1, where = indices_to_sum)
-    # gamma1[:-1,1] = alpha*np.ones(T-1) + np.sum(temp, axis=0)
-    # gamma1[-1,:] = np.array([1, 0.001])
-    # Without loop
     phi_temp = np.flip(np.cumsum(np.flip(phi, axis=1), axis=1), axis=1)
     phi_temp = phi_temp[:,1:]
     gamma[:-1,1] = alpha*np.ones(T-1) + np.sum(phi_temp, axis=0)
@@ -100,13 +90,6 @@ def update_tau(data, lamda, phi):
     T = phi.shape[1]
     K = data.shape[1]
     tau = np.empty((T,K+1))
-    # tau_1 = np.empty((T,K+1))
-    # for t in range(T):
-    #     phi_t = phi[:,t]
-    #     weighted_data = np.multiply(x,phi_t[:,np.newaxis])
-    #     tau_1[t,:-1] = lamda[:-1]+np.sum(weighted_data,axis=0)
-    #     tau_1[t,-1]=lamda[-1]+np.sum(phi_t)
-    # version without loop
     phi_temp = np.repeat(phi, 2, axis=1)
     data_temp = np.tile(data,T)
     weighted_data = phi_temp*data_temp
