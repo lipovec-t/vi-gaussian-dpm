@@ -4,6 +4,7 @@ import timeit
 # Third party imports
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.stats as st
 
 # Local application imports
 from data.generation import generate_data
@@ -44,7 +45,7 @@ max_iteration = 100
 T = 20 # truncation
 
 # number of MC runs
-MC_runs = 10
+MC_runs = 500
 
 # MSE array -> max_N  x MC_runs
 MSE_x = np.zeros((N_array.size, MC_runs))
@@ -105,3 +106,20 @@ t_1 = timeit.default_timer()
 
 # compute elapsed time
 runtime = t_1 - t_0
+
+# mean MSE
+MSE_x_avg = np.mean(MSE_x, axis=1)
+# 95% confidence interval
+(ci_min, ci_max) = st.t.interval(alpha=0.95, df=MSE_x.shape[1]-1, loc=MSE_x_avg, scale=st.sem(MSE_x, axis=1)) 
+# Plot
+params = {"text.usetex" : True,
+          "font.family" : "serif",
+          "font.size"   : "16"}
+plt.rcParams.update(params)
+fig, ax = plt.subplots()
+ax.plot(N_array, MSE_x_avg, color='b', label=r'MSE VI $\alpha = {}$'.format(alpha))
+ax.fill_between(N_array, ci_min, ci_max, color='b', alpha=.1, label=r'$95\%$ CI')
+plt.xlabel('Number of objects')
+plt.ylabel('Average MSE')
+plt.legend()
+plt.grid()
