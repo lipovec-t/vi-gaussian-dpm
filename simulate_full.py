@@ -11,7 +11,7 @@ from data.generation import generate_data
 from vi.cavi import coordinates_ascent
 
 # random seed for testing purposes
-np.random.seed(255) 
+# np.random.seed(255) 
 
 # model parameters
 K = 2
@@ -37,7 +37,7 @@ lamda = np.empty(K+1)
 lamda1_temp = np.matmul(np.linalg.inv(sigma), sigma_G)
 lamda[-1] = 1/lamda1_temp[0,0]
 lamda[:-1] = lamda[-1]*mu_G
-alpha = 1 # concentration parameter - higher alpha more clusters
+alpha = 0.5 # concentration parameter - higher alpha more clusters
 
 # parameters for the algorithm
 phi_init_version = 1
@@ -99,7 +99,7 @@ for i,N in enumerate(N_array):
         weighted_centered_data = np.einsum('ij,kj->ki', mmse_weight, data - data_mean_temp)
         x_est = data_mean_temp + weighted_centered_data
         # calculate mse
-        MSE_x[i,j] = 1/N * np.sum(np.linalg.norm(x - x_est, axis=1)**2)
+        MSE_x[i,j] = 1/(K*N) * np.sum(np.linalg.norm(x - x_est, axis=1)**2)
         
 # end timer
 t_1 = timeit.default_timer()
