@@ -101,7 +101,7 @@ mapper = lambda i: np.where(cluster_indicators_est == i)[0]
 plot_indicator_array_est = list(map(mapper, indicator_array_est))
 # Scatter plot with MMSE mean of clusters
 plt.figure()
-plt.title("Clustering - MMSE Mean")
+plt.title("Clustering DPM - MMSE Mean")
 if T_est > 10:
     print('More clusters than colors')
 colormap = plt.cm.get_cmap('tab20', 10)
@@ -111,7 +111,7 @@ da, dy = data[:,0], data[:,1]
 plt.scatter(da, dy, c=colormap(plot_indicator_array_est), marker='.')
 # Scatter plot with sample mean of clusters
 plt.figure()
-plt.title("Clustering - Cluster Sample Mean") 
+plt.title("Clustering DPM - Cluster Sample Mean") 
 cx, cy = cluster_average[:,0], cluster_average[:,1]   
 plt.scatter(cx, cy, c = colormap(plot_cluster_indicators), marker="o")
 da, dy = data[:,0], data[:,1]
