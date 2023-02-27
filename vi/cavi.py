@@ -23,8 +23,7 @@ def coordinates_ascent(data, max_iterations, initialization, alpha, sigma, sigma
         
         if initialization == 3:
             # TODO: rework this init version
-            for k in range(N):
-                phi_init[k,rand_indicators[j][k]] = 1
+            
                 
         gamma_temp = update_gamma(phi_init,alpha)
         tau_temp = update_tau(data, lamda, phi_init)
@@ -52,6 +51,7 @@ def coordinates_ascent(data, max_iterations, initialization, alpha, sigma, sigma
 def _init(version, T, N, *kwargs):
     # initialization
     # NOTE: T has to be higher than the true number of clusters
+    # TODO: SAVE PHI INIT AS 3D ARRAY with num_permutation as 3rd dim.
     phi_init_version = 1
     if phi_init_version == 1:
         phi_init = 1/T * np.ones((N,T))
@@ -65,6 +65,9 @@ def _init(version, T, N, *kwargs):
         num_permutations = 30
         rand_indicators = [np.random.randint(0,T,N) for i in range(num_permutations)]
         phi_init = np.zeros((N,T))
+        # TODO: do this for all permutations j
+        for k in range(N):
+            phi_init[k,rand_indicators[j][k]] = 1
     elif phi_init_version == 4:
         T = N
         phi_init = np.eye(N)
@@ -73,6 +76,9 @@ def _init(version, T, N, *kwargs):
         num_permutations = T
         rand_indicators = [i*np.ones(T) for i in range(num_permutations)]
         phi_init = np.zeros((N,T))
+        # TODO: do this for all permutations j
+        for k in range(N):
+            phi_init[k,rand_indicators[j][k]] = 1
     return phi_init, num_permutations
 
 def update_gamma(phi, alpha):
