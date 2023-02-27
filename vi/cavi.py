@@ -32,7 +32,7 @@ def coordinates_ascent(data, max_iterations, initialization, alpha, sigma, sigma
             
             # compute elbo and check convergence
             elbo[i] = compute_elbo(alpha, lamda, data, gamma_temp, phi_temp, tau_temp, sigma, mu_G, sigma_G, sigma_inv)
-            if i>0 and np.abs(elbo[i]-elbo[i-1]) < 0.1:
+            if i>0 and np.abs(elbo[i]-elbo[i-1])/np.abs(elbo[i-1]) * 100 < 1e-2:
                 break
             
         if elbo[i] > elbo_final:
