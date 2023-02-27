@@ -1,16 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import multivariate_normal, multinomial
+from scipy.stats import multivariate_normal
 
-def generate_data(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, plot):
+def generate_data_rp(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, rp, plot):
     """
-    Generation of data
+    Generation of data according to DPM or MFM
     """
     # base distribution
     G0 = multivariate_normal(mean = mu_G, cov = sigma_G)
     
-    # Dirichlet process
-    indicator_array = crp(N, alpha)
+    # Restaurant process
+    indicator_array = rp(N, alpha)
     num_clusters = max(indicator_array)+1
     cluster_means = G0.rvs(num_clusters)
     num_clusters = cluster_means.shape[0]
@@ -22,8 +22,9 @@ def generate_data(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, plot):
     if num_clusters == 1:
         cluster_means = np.repeat(cluster_means[np.newaxis,:], 1, axis = 0)
     
-    # Dirichlet process mixture
-    x = np.empty((N,2))
+    # Mixture
+    K = len(mu_G)
+    x = np.empty((N,K))
     for i in range(N):
         mean = cluster_means[indicator_array[i]] + mu_U
         x[i,:] = multivariate_normal.rvs(mean = mean, cov = sigma_U, size = 1)
@@ -41,36 +42,51 @@ def generate_data(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, plot):
     
     return indicator_array, cluster_assignements, cluster_means, x, y
 
-def crp(N, alpha):
+def generate_data_gm(N, num_clusters, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, plot):
     """
-    Chinese Restaurant Process
+    Generation of data according to a Gaussian mixture
     """
-    counts = []
-    assignmentArray = np.empty(N, int)
-    n = 0
-    while n < N:
-        # Compute the (unnormalized) probabilities of assigning the new object
-        # to each of the existing groups, as well as a new group
-        assign_probs = [None] * (len(counts) + 1)
-        
-        for i in range(len(counts)):
-            assign_probs[i] = counts[i] / (n + alpha)
-            
-        assign_probs[-1] = alpha / (n + alpha)
-        
-        # Draw the new object's assignment from the discrete distribution
-        multinomialDist = multinomial(1, assign_probs)
-        assignment = multinomialDist.rvs(1)
-        assignment = np.where(assignment[0] == 1)
-        assignment = int(assignment[0])
-        assignmentArray[n] = assignment
-        
-        # Update the counts for next time, adding a new count if a new group was
-        # created
-        if assignment == len(counts):
-            counts.append(0)
-          
-        counts[assignment] += 1
-        n += 1
+    indicator_array = np.zeros(N, int)
     
-    return assignmentArray
+    points_per_cluster = N//num_clusters
+
+    # Indicator array
+    j = 0
+    for i in range(N):
+        indicator_array[i] = j
+        if (i+1) % points_per_cluster == 0:
+            j = j+1
+    # distribute additional data points over clusters for the case where N/num_cluster != int
+    for i in range(N%num_clusters):
+        indicator_array[N-(i+1)] = i
+        
+    cluster_assignements = np.zeros((N,num_clusters))
+    # TODO: vectorize this
+    for i in range(N):
+        cluster_assignements [i,indicator_array[i]] = 1
+
+    # Draw cluster means 
+    G0 = multivariate_normal(mean = mu_G, cov = sigma_G)
+    cluster_means = G0.rvs(num_clusters)
+
+    # Draw datapoints
+    K = len(mu_G)
+    x = np.empty((N,K))
+    j = 0
+    for i in range(N):
+        x[i,:] = multivariate_normal.rvs(mean = cluster_means[indicator_array[i]], cov = sigma_U, size = 1)
+            
+    # Measurement noise
+    v = multivariate_normal.rvs(mean = mu_V, cov = sigma_V, size = N)
+    y = x + v
+
+    if plot:       
+        plt.figure()
+        colormap = plt.cm.get_cmap('tab20', num_clusters)
+        plt.title("Data")
+        plt.scatter(cluster_means[:,0], cluster_means[:,1], c = colormap(range(num_clusters)), marker = "o")
+        j = 0
+        plt.scatter(x[:,0], x[:,1], c = colormap(indicator_array), marker = ".")
+        
+    return indicator_array, cluster_assignements, cluster_means, x, y
+

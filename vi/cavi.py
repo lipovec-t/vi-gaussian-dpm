@@ -19,12 +19,7 @@ def coordinates_ascent(data, max_iterations, initialization, alpha, sigma, sigma
     phi_init, num_permutations = _init(initialization, T, N)
     elbo = np.zeros(max_iterations)
     elbo_final = -np.inf
-    for j in range(num_permutations):
-        
-        if initialization == 3:
-            # TODO: rework this init version
-            
-                
+    for j in range(num_permutations):             
         gamma_temp = update_gamma(phi_init,alpha)
         tau_temp = update_tau(data, lamda, phi_init)
         

@@ -6,7 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Local application imports
-from data.generation import generate_data
+from data.generation import generate_data_rp, generate_data_gm
+from data import restaurant_process
 from vi.cavi import coordinates_ascent
 
 # random seed for testing purposes
@@ -44,8 +45,23 @@ max_iteration = 100
 T = 20 # truncation
 
 # generate data
-indicator_array, cluster_assignements, cluster_means, data, _ = \
-    generate_data(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, False)
+data_type = "DPM"
+plot_data = True
+if data_type == "DPM":
+    indicator_array, cluster_assignements, cluster_means, data, _ = \
+        generate_data_rp(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
+                      restaurant_process.rp_dpm, plot_data)
+elif data_type == "MFM":
+    indicator_array, cluster_assignements, cluster_means, data, _ = \
+        generate_data_rp(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
+                      restaurant_process.rp_mfm, plot_data) 
+elif data_type == "GM":
+    num_clusters = 5
+    indicator_array, cluster_assignements, cluster_means, data, _ = \
+    generate_data_gm(N, num_clusters, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, plot_data)
+elif data_type == "load":
+    filename = "data.npy"
+    data = np.load(filename)
 
 # start timer
 t_0 = timeit.default_timer()
