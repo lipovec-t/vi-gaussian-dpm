@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 # Local application imports
 from data.generation import generate_data_rp, generate_data_gm
 from data import restaurant_process
-from vi.cavi import coordinates_ascent
+from vi.cavi import coordinates_ascent, initParams
 
 # random seed for testing purposes
 np.random.seed(255) 
@@ -39,35 +39,38 @@ lamda[-1] = 1/lamda1_temp[0,0]
 lamda[:-1] = lamda[-1]*mu_G
 alpha = 1 # concentration parameter - higher alpha more clusters
 
-# parameters for the algorithm
-phi_init_version = 1
-max_iteration = 100
-T = 20 # truncation
-
 # generate data
 data_type = "DPM"
 plot_data = True
 if data_type == "DPM":
-    indicator_array, cluster_assignements, cluster_means, data, _ = \
+    indicator_array, cluster_assignments, cluster_means, data, _ = \
         generate_data_rp(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
                       restaurant_process.rp_dpm, plot_data)
 elif data_type == "MFM":
-    indicator_array, cluster_assignements, cluster_means, data, _ = \
+    indicator_array, cluster_assignments, cluster_means, data, _ = \
         generate_data_rp(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
                       restaurant_process.rp_mfm, plot_data) 
 elif data_type == "GM":
     num_clusters = 5
-    indicator_array, cluster_assignements, cluster_means, data, _ = \
-    generate_data_gm(N, num_clusters, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, plot_data)
+    indicator_array, cluster_assignments, cluster_means, data, _ = \
+        generate_data_gm(N, num_clusters, mu_G, sigma_G, mu_U, sigma_U, mu_V,
+                         sigma_V, plot_data)
 elif data_type == "load":
     filename = "data.npy"
     data = np.load(filename)
+    
+# parameters for the algorithm
+init_version = 1
+num_permutations = 30 # for init version 3
+init_params = initParams(init_version, cluster_assignments, num_permutations)
+max_iteration = 100
+T = 20 # truncation
 
 # start timer
 t_0 = timeit.default_timer()
 # CAVI
 elbo_final, tau, gamma, phi = \
-    coordinates_ascent(data, max_iteration, phi_init_version, alpha,\
+    coordinates_ascent(data, max_iteration, init_params, alpha,\
                        sigma, sigma_inv, mu_G, sigma_G, lamda, T)
 # end timer
 t_1 = timeit.default_timer()

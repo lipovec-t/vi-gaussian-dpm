@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 import scipy.stats as st
 
 # Local application imports
-from data.generation import generate_data_rp, generate_data_gm
+from data.generation import generate_data_rp
 from data import restaurant_process
-from vi.cavi import coordinates_ascent
+from vi.cavi import coordinates_ascent, initParams
 
 # random seed for testing purposes
 # np.random.seed(255) 
@@ -41,12 +41,13 @@ lamda[:-1] = lamda[-1]*mu_G
 alpha = 0.5 # concentration parameter - higher alpha more clusters
 
 # parameters for the algorithm
-phi_init_version = 1
+init_version = 1
+num_permutations = 30 # for init version 3
 max_iteration = 100
 T = 20 # truncation
 
 # number of MC runs
-MC_runs = 500
+MC_runs = 100
 
 # MSE array -> max_N  x MC_runs
 MSE_x = np.zeros((N_array.size, MC_runs))
@@ -64,10 +65,12 @@ for i,N in enumerate(N_array):
         indicator_array, cluster_assignements, cluster_means, x, data = \
             generate_data_rp(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
                           restaurant_process.rp_dpm, False)
+        init_params = initParams(init_version, cluster_assignements,
+                                 num_permutations)
         
         # CAVI
         elbo, tau, gamma, phi = \
-            coordinates_ascent(data, max_iteration, phi_init_version, alpha,\
+            coordinates_ascent(data, max_iteration, init_params, alpha,\
                                sigma, sigma_inv, mu_G, sigma_G, lamda, T)
         if elbo > elbo_final[i]:
             elbo_final[i] = elbo

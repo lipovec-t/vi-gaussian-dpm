@@ -1,3 +1,6 @@
+# Standard library imports
+from dataclasses import dataclass
+
 # Third party imports
 import numpy as np
 
@@ -11,20 +14,22 @@ from vi.elbo import compute_elbo
 # tau   -> T x (K+1), [tau_t11 ... tau_t1K, tau_t2]
 # lamda -> (K+1) x 1, [lamda_t1, lamda_t2]  
 
-def coordinates_ascent(data, max_iterations, initialization, alpha, sigma, sigma_inv, mu_G, sigma_G, lamda, truncation):
+def coordinates_ascent(data, max_iterations, init_params, alpha, sigma, sigma_inv, mu_G, sigma_G, lamda, truncation):
     # TODO: maybe use a dic for the parameters alpha, sigma, mu_G, sigma_G, truncation
     T = truncation
     N = data.shape[0]
-    # TODO: fix init version 2 and 3
-    phi_init, num_permutations = _init(initialization, T, N)
+    phi_init = _init(init_params, T, N)
+    # multiple phi initializations are saved in the 3rd dim of phi_init
+    num_permutations = phi_init.shape[2]
     elbo = np.zeros(max_iterations)
     elbo_final = -np.inf
-    for j in range(num_permutations):             
-        gamma_temp = update_gamma(phi_init,alpha)
-        tau_temp = update_tau(data, lamda, phi_init)
+    
+    for j in range(num_permutations):
+        phi_temp = phi_init[:,:,j]          
+        gamma_temp = update_gamma(phi_temp,alpha)
+        tau_temp = update_tau(data, lamda, phi_temp)
         
         for i in range(max_iterations):
-            # TODO: save variational parameters and investigate convergence of parameters (instead of ELBO)
             # compute variational updates
             phi_temp = update_phi(data, gamma_temp, tau_temp, lamda, sigma, sigma_inv)
             gamma_temp = update_gamma(phi_temp, alpha)
@@ -43,42 +48,43 @@ def coordinates_ascent(data, max_iterations, initialization, alpha, sigma, sigma
             
     return elbo_final, tau, gamma, phi
 
-def _init(version, T, N, *kwargs):
+@dataclass
+class initParams:
+    version: int
+    true_assignment:  np.ndarray
+    num_permutations: int
+
+def _init(init_params, T, N):
     # initialization
     # NOTE: T has to be higher than the true number of clusters
-    # TODO: SAVE PHI INIT AS 3D ARRAY with num_permutation as 3rd dim.
-    phi_init_version = 1
-    if phi_init_version == 1:
-        phi_init = 1/T * np.ones((N,T))
-        num_permutations = 1
-    elif phi_init_version == 2:
-        phi_init = np.zeros((N,T))
-        phi_init[:,:T_true] = true_assignment
-        num_permutations = 1
-    elif phi_init_version == 3:
-        np.random.seed(1337)
-        num_permutations = 30
-        rand_indicators = [np.random.randint(0,T,N) for i in range(num_permutations)]
-        phi_init = np.zeros((N,T))
-        # TODO: do this for all permutations j
-        for k in range(N):
-            phi_init[k,rand_indicators[j][k]] = 1
-    elif phi_init_version == 4:
+    if init_params.version == 1:
+        phi_init = 1/T * np.ones((N,T,1))
+    elif init_params.version == 2:
+        phi_init = np.zeros((N,T,1))
+        T_true = init_params.true_assignment.shape[1]
+        phi_init[:,:T_true,0] = init_params.true_assignment
+    elif init_params.version == 3:
+        num_perm = init_params.num_permutations
+        rand_indicators = [np.random.randint(0,T,N) for i in range(num_perm)]
+        phi_init = np.zeros((N,T,num_perm))
+        for j in range(num_perm):
+            for k in range(N):
+               phi_init[k,rand_indicators[j][k],j] = 1
+    elif init_params.version == 4:
         T = N
         phi_init = np.eye(N)
-        num_permutations = 1
-    elif phi_init_version == 5:
-        num_permutations = T
-        rand_indicators = [i*np.ones(T) for i in range(num_permutations)]
-        phi_init = np.zeros((N,T))
-        # TODO: do this for all permutations j
-        for k in range(N):
-            phi_init[k,rand_indicators[j][k]] = 1
-    return phi_init, num_permutations
+        phi_init = np.expand_dims(phi_init, axis=2)
+    elif init_params.version == 5:
+        num_perm = T
+        rand_indicators = [i*np.ones(T,int) for i in range(num_perm)]
+        phi_init = np.zeros((N,T,num_perm))
+        for j in range(num_perm):
+            for k in range(N):
+                phi_init[k,rand_indicators[j],j] = 1
+    return phi_init
 
 def update_gamma(phi, alpha):
     T = phi.shape[1]
-    N = phi.shape[0]
     gamma = np.empty((T,2))
     gamma[:,0] = np.ones(T) + np.sum(phi, axis = 0)
     phi_temp = np.flip(np.cumsum(np.flip(phi, axis=1), axis=1), axis=1)
