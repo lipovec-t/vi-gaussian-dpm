@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 import scipy.stats as st
 
 # Local application imports
-from data.generation import generate_data
+from data.generation import generate_data_rp, generate_data_gm
+from data import restaurant_process
 from vi.cavi import coordinates_ascent
 
 # random seed for testing purposes
@@ -61,7 +62,8 @@ for i,N in enumerate(N_array):
     for j in range(MC_runs):
         # generate data
         indicator_array, cluster_assignements, cluster_means, x, data = \
-            generate_data(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, False)
+            generate_data_rp(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
+                          restaurant_process.rp_dpm, False)
         
         # CAVI
         elbo, tau, gamma, phi = \
