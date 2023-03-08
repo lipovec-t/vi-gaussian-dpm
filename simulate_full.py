@@ -15,8 +15,9 @@ from vi.cavi import coordinates_ascent, initParams
 # np.random.seed(255) 
 
 # model parameters
+# data dimension
 K = 2
-# hyperparameters of the base distribution
+# base distribution
 mu_G    = np.zeros(K)
 sigma_G = 5*np.eye(K)
 # mixture distribution 
@@ -33,7 +34,7 @@ N_array = np.arange(1,51)
 sigma = sigma_U + sigma_V
 sigma_inv = np.linalg.inv(sigma)
 
-# hyperparameters
+# hyperparameters - assumed to be known
 lamda = np.empty(K+1)
 lamda1_temp = np.matmul(np.linalg.inv(sigma), sigma_G)
 lamda[-1] = 1/lamda1_temp[0,0]

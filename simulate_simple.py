@@ -14,8 +14,9 @@ from vi.cavi import coordinates_ascent, initParams
 np.random.seed(255) 
 
 # model parameters
+# data dimension
 K = 2
-# hyperparameters of the base distribution
+# base distribution
 mu_G    = np.zeros(K)
 sigma_G = 5*np.eye(K)
 # mixture distribution 
@@ -32,23 +33,18 @@ N = 50
 sigma = sigma_U 
 sigma_inv = np.linalg.inv(sigma)
 
-# hyperparameters
-lamda = np.empty(K+1)
-lamda1_temp = np.matmul(np.linalg.inv(sigma), sigma_G)
-lamda[-1] = 1/lamda1_temp[0,0]
-lamda[:-1] = lamda[-1]*mu_G
-alpha = 1 # concentration parameter - higher alpha more clusters
-
 # generate data
 data_type = "DPM"
 plot_data = True
 if data_type == "DPM":
+    alpha_DPM = 1 # concentration parameter - higher alpha more clusters
     indicator_array, cluster_assignments, cluster_means, data, _ = \
-        generate_data_rp(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
+        generate_data_rp(N, alpha_DPM, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
                       restaurant_process.rp_dpm, plot_data)
 elif data_type == "MFM":
+    alpha_MFM = 5 # kind of concentration parameter - higher alpha more clusters
     indicator_array, cluster_assignments, cluster_means, data, _ = \
-        generate_data_rp(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
+        generate_data_rp(N, alpha_MFM, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
                       restaurant_process.rp_mfm, plot_data) 
 elif data_type == "GM":
     num_clusters = 5
@@ -58,6 +54,13 @@ elif data_type == "GM":
 elif data_type == "load":
     filename = "data.npy"
     data = np.load(filename)
+    
+# hyperparameters - assumed to be known
+lamda = np.empty(K+1)
+lamda1_temp = np.matmul(np.linalg.inv(sigma), sigma_G)
+lamda[-1] = 1/lamda1_temp[0,0]
+lamda[:-1] = lamda[-1]*mu_G
+alpha = 1 # concentration parameter - higher alpha more clusters
     
 # parameters for the algorithm
 init_version = 1
