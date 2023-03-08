@@ -6,81 +6,37 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Local application imports
-from data.generation import generate_data_rp, generate_data_gm
-from data import restaurant_process
-from vi.cavi import coordinates_ascent, initParams
+from data.generation import generate_data
+from vi.cavi import coordinates_ascent
+from config_simple import Params
 
 # random seed for testing purposes
-np.random.seed(255) 
+np.random.seed(255)
 
-# model parameters
-# data dimension
-K = 2
-# base distribution
-mu_G    = np.zeros(K)
-sigma_G = 5*np.eye(K)
-# mixture distribution 
-mu_U    = np.zeros(K)
-# NOTE: sigma_G must be a scaled version of sigma_Y in our conjugate model
-sigma_U = 1*np.eye(K)
-# measurement noise
-mu_V    = np.zeros(K)
-sigma_V = np.eye(K)
-# number of data points
-N = 50
-
-# covariance matrix and inverse for CAVI
-sigma = sigma_U 
-sigma_inv = np.linalg.inv(sigma)
+# load parameters
+params = Params() 
 
 # generate data
-data_type = "DPM"
-plot_data = True
-if data_type == "DPM":
-    alpha_DPM = 1 # concentration parameter - higher alpha more clusters
-    indicator_array, cluster_assignments, cluster_means, data, _ = \
-        generate_data_rp(N, alpha_DPM, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
-                      restaurant_process.rp_dpm, plot_data)
-elif data_type == "MFM":
-    alpha_MFM = 5 # kind of concentration parameter - higher alpha more clusters
-    indicator_array, cluster_assignments, cluster_means, data, _ = \
-        generate_data_rp(N, alpha_MFM, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
-                      restaurant_process.rp_mfm, plot_data) 
-elif data_type == "GM":
-    num_clusters = 5
-    indicator_array, cluster_assignments, cluster_means, data, _ = \
-        generate_data_gm(N, num_clusters, mu_G, sigma_G, mu_U, sigma_U, mu_V,
-                         sigma_V, plot_data)
-elif data_type == "load":
-    filename = "data.npy"
-    data = np.load(filename)
-    
-# hyperparameters - assumed to be known
-lamda = np.empty(K+1)
-lamda1_temp = np.matmul(np.linalg.inv(sigma), sigma_G)
-lamda[-1] = 1/lamda1_temp[0,0]
-lamda[:-1] = lamda[-1]*mu_G
-alpha = 1 # concentration parameter - higher alpha more clusters
-    
-# parameters for the algorithm
-init_version = 1
-num_permutations = 30 # for init version 3
-init_params = initParams(init_version, cluster_assignments, num_permutations)
-max_iteration = 100
-T = 20 # truncation
+indicator_array, cluster_assignments, cluster_means, x, y = \
+    generate_data(params)
+if params.include_noise == False:
+    data = x
+else:
+    data = y
 
 # start timer
 t_0 = timeit.default_timer()
-# CAVI
-elbo_final, tau, gamma, phi = \
-    coordinates_ascent(data, max_iteration, init_params, alpha,\
-                       sigma, sigma_inv, mu_G, sigma_G, lamda, T)
-# end timer
-t_1 = timeit.default_timer()
 
-# postprocessing
+# CAVI
+elbo_final, tau, gamma, phi = coordinates_ascent(data, params)
+# end timer
+
+t_1 = timeit.default_timer()
 # compute elapsed time
 runtime = t_1 - t_0
+
+# postprocessing
+# TODO: put postprocessing into vi package
 
 # MAP estimate of the cluster assignements
 indicator_array_est = np.argmax(phi,axis=1)
@@ -89,6 +45,10 @@ indicator_array_est = np.argmax(phi,axis=1)
 cluster_indicators_est = np.unique(indicator_array_est)
 T_est = cluster_indicators_est.size
 
+# load parameters
+T = params.T
+K = params.K
+N = params.N
 # estimate of the cluster weights
 V = np.divide(gamma[:,0],np.sum(gamma,axis=1))
 pi = np.zeros(np.shape(V))

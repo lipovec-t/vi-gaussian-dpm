@@ -1,6 +1,3 @@
-# Standard library imports
-from dataclasses import dataclass
-
 # Third party imports
 import numpy as np
 
@@ -14,11 +11,17 @@ from vi.elbo import compute_elbo
 # tau   -> T x (K+1), [tau_t11 ... tau_t1K, tau_t2]
 # lamda -> (K+1) x 1, [lamda_t1, lamda_t2]  
 
-def coordinates_ascent(data, max_iterations, init_params, alpha, sigma, sigma_inv, mu_G, sigma_G, lamda, truncation):
-    # TODO: maybe use a dic for the parameters alpha, sigma, mu_G, sigma_G, truncation
-    T = truncation
-    N = data.shape[0]
-    phi_init = _init(init_params, T, N)
+def coordinates_ascent(data, params):
+    # load params
+    phi_init        = _init(params)
+    max_iterations  = params.max_iterations
+    alpha           = params.alpha
+    sigma           = params.sigma
+    sigma_inv       = params.sigma_inv
+    mu_G            = params.mu_G
+    sigma_G         = params.sigma_G
+    lamda           = params.lamda 
+    
     # multiple phi initializations are saved in the 3rd dim of phi_init
     num_permutations = phi_init.shape[2]
     elbo = np.zeros(max_iterations)
@@ -31,12 +34,14 @@ def coordinates_ascent(data, max_iterations, init_params, alpha, sigma, sigma_in
         
         for i in range(max_iterations):
             # compute variational updates
-            phi_temp = update_phi(data, gamma_temp, tau_temp, lamda, sigma, sigma_inv)
+            phi_temp = update_phi(data, gamma_temp, tau_temp, \
+                                  lamda, sigma, sigma_inv)
             gamma_temp = update_gamma(phi_temp, alpha)
             tau_temp = update_tau(data, lamda, phi_temp)
             
             # compute elbo and check convergence
-            elbo[i] = compute_elbo(alpha, lamda, data, gamma_temp, phi_temp, tau_temp, sigma, mu_G, sigma_G, sigma_inv)
+            elbo[i] = compute_elbo(alpha, lamda, data, gamma_temp, phi_temp, \
+                                   tau_temp, sigma, mu_G, sigma_G, sigma_inv)
             if i>0 and np.abs(elbo[i]-elbo[i-1])/np.abs(elbo[i-1]) * 100 < 1e-2:
                 break
             
@@ -48,33 +53,30 @@ def coordinates_ascent(data, max_iterations, init_params, alpha, sigma, sigma_in
             
     return elbo_final, tau, gamma, phi
 
-@dataclass
-class initParams:
-    version: int
-    true_assignment:  np.ndarray
-    num_permutations: int
-
-def _init(init_params, T, N):
+def _init(params):
+    # truncation parameter and number of data points
+    T = params.T
+    N = params.N
     # initialization
     # NOTE: T has to be higher than the true number of clusters
-    if init_params.version == 1:
+    if params.init_type == 1:
         phi_init = 1/T * np.ones((N,T,1))
-    elif init_params.version == 2:
+    elif params.init_type == 2:
         phi_init = np.zeros((N,T,1))
-        T_true = init_params.true_assignment.shape[1]
-        phi_init[:,:T_true,0] = init_params.true_assignment
-    elif init_params.version == 3:
-        num_perm = init_params.num_permutations
+        T_true = params.true_assignment.shape[1]
+        phi_init[:,:T_true,0] = params.true_assignment
+    elif params.init_type == 3:
+        num_perm = params.num_permutations
         rand_indicators = [np.random.randint(0,T,N) for i in range(num_perm)]
         phi_init = np.zeros((N,T,num_perm))
         for j in range(num_perm):
             for k in range(N):
                phi_init[k,rand_indicators[j][k],j] = 1
-    elif init_params.version == 4:
+    elif params.init_type == 4:
         T = N
         phi_init = np.eye(N)
         phi_init = np.expand_dims(phi_init, axis=2)
-    elif init_params.version == 5:
+    elif params.initType == 5:
         num_perm = T
         rand_indicators = [i*np.ones(T,int) for i in range(num_perm)]
         phi_init = np.zeros((N,T,num_perm))

@@ -1,6 +1,46 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import multivariate_normal
+from . import restaurant_process
+
+def generate_data(params):
+    # load config
+    data_type   = params.data_type
+    N           = params.N
+    mu_G        = params.mu_G
+    sigma_G     = params.sigma_G
+    mu_U        = params.mu_U
+    sigma_U     = params.sigma_U
+    mu_V        = params.mu_V
+    sigma_V     = params.sigma_V
+    plot_data   = params.plot_data
+    
+    # generate data according to config
+    if data_type == "DPM":
+        # concentration parameter - higher alpha more clusters
+        alpha_DPM = params.alpha_DPM
+        indicator_array, cluster_assignments, cluster_means, x, y = \
+            generate_data_rp(N, alpha_DPM, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
+                          restaurant_process.rp_dpm, plot_data)
+    elif data_type == "MFM":
+        # kind of concentration parameter - higher alpha more clusters
+        alpha_MFM = params.alpha_MFM 
+        indicator_array, cluster_assignments, cluster_means, x, y = \
+            generate_data_rp(N, alpha_MFM, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
+                          restaurant_process.rp_mfm, plot_data)
+    elif data_type == "GM":
+        num_clusters = params.num_clusters
+        indicator_array, cluster_assignments, cluster_means, data, _ = \
+            generate_data_gm(N, num_clusters, mu_G, sigma_G, mu_U, sigma_U, mu_V,
+                             sigma_V, plot_data)
+    elif data_type == "load":
+        filename = params.filename
+        x = np.load(filename)
+        # there is no ground truth w.r.t to the following vars in this case
+        y = x
+        indicator_array, cluster_assignments, cluster_means = []
+        
+    return indicator_array, cluster_assignments, cluster_means, x, y 
 
 def generate_data_rp(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, rp, plot):
     """
@@ -13,7 +53,6 @@ def generate_data_rp(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, rp, 
     indicator_array = rp(N, alpha)
     num_clusters = max(indicator_array)+1
     cluster_means = G0.rvs(num_clusters)
-    num_clusters = cluster_means.shape[0]
     cluster_assignements = np.zeros((N,num_clusters))
     # TODO: vectorize this
     for i in range(N):
