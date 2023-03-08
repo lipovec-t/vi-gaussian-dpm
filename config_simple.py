@@ -49,7 +49,13 @@ class Params:
     alpha = 1
     
     # parameters for the algorithm
-    init_type = 1
+    # Init type:
+    # Uniform   - assign all datapoints equally likely to clusters
+    # True      - use true hard assignments
+    # Permute   - use random hard assignments
+    # Unique    - assign each datapoint to its own cluster from 1 to T
+    # AllInOne  - Put all datapoints in one cluster
+    init_type = 'Uniform'
     # true_assignment should be added during runtime
     num_permutations = 30 # only for random permuated initialization
     max_iterations = 100
