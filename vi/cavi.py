@@ -76,7 +76,7 @@ def _init(params):
         params.T = N
         phi_init = np.eye(N)
         phi_init = np.expand_dims(phi_init, axis=2)
-    elif params.initType.lower() == 'allinone':
+    elif params.init_type.lower() == 'allinone':
         num_perm = T
         rand_indicators = [i*np.ones(T,int) for i in range(num_perm)]
         phi_init = np.zeros((N,T,num_perm))
