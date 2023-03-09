@@ -6,7 +6,11 @@ import numpy as np
 
 @dataclass
 class Params:
-    # model type
+    # Model type:
+    # DPM   - Gaussian Dirchlet Process Mixture
+    # MFM   - Gaussian Mixture of finite Mixtures
+    # GM    - Gaussian Mixture with fixed number of clusters
+    # load  - Load data set from file
     data_type = "DPM"
     # model specific parameters
     # DPM

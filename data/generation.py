@@ -16,29 +16,31 @@ def generate_data(params):
     plot_data   = params.plot_data
     
     # generate data according to config
-    if data_type == "DPM":
+    if data_type.lower() == "dpm":
         # concentration parameter - higher alpha more clusters
         alpha_DPM = params.alpha_DPM
         indicator_array, cluster_assignments, cluster_means, x, y = \
             generate_data_rp(N, alpha_DPM, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
                           restaurant_process.rp_dpm, plot_data)
-    elif data_type == "MFM":
+    elif data_type.lower() == "mfm":
         # kind of concentration parameter - higher alpha more clusters
         alpha_MFM = params.alpha_MFM 
         indicator_array, cluster_assignments, cluster_means, x, y = \
             generate_data_rp(N, alpha_MFM, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
                           restaurant_process.rp_mfm, plot_data)
-    elif data_type == "GM":
+    elif data_type.lower() == "gm":
         num_clusters = params.num_clusters
         indicator_array, cluster_assignments, cluster_means, data, _ = \
             generate_data_gm(N, num_clusters, mu_G, sigma_G, mu_U, sigma_U, mu_V,
                              sigma_V, plot_data)
-    elif data_type == "load":
+    elif data_type.lower() == "load":
         filename = params.filename
         x = np.load(filename)
+        params.N = x.shape[0]
+        params.K = x.shape[1]
         # there is no ground truth w.r.t to the following vars in this case
         y = x
-        indicator_array, cluster_assignments, cluster_means = []
+        indicator_array, cluster_assignments, cluster_means = [], [], []
         
     return indicator_array, cluster_assignments, cluster_means, x, y 
 

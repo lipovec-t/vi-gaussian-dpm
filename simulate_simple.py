@@ -14,7 +14,7 @@ from config_simple import Params
 np.random.seed(255)
 
 # load parameters
-params = Params() 
+params = Params()
 
 # generate data
 indicator_array, cluster_assignments, cluster_means, x, y = \
