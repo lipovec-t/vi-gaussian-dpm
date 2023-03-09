@@ -73,7 +73,7 @@ def _init(params):
             for k in range(N):
                phi_init[k,rand_indicators[j][k],j] = 1
     elif params.init_type.lower() == 'unique':
-        T = N
+        params.T = N
         phi_init = np.eye(N)
         phi_init = np.expand_dims(phi_init, axis=2)
     elif params.init_type.lower() == 'allinone':
