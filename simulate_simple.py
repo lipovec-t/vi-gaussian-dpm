@@ -36,7 +36,6 @@ t_1 = timeit.default_timer()
 runtime = t_1 - t_0
 
 # postprocessing
-# TODO: put postprocessing into vi package
 
 # MAP estimate of the cluster assignements
 indicator_array_est = np.argmax(phi,axis=1)
@@ -76,7 +75,6 @@ counts = np.repeat(counts[:,np.newaxis], K, axis=1)
 cluster_average = np.divide(cluster_average, counts)
 
 # Plot
-# TODO: contour plot of posterior
 # map estimated cluster indicators to a range from 0 to T_est-1 for plotting
 plot_cluster_indicators = np.arange(T_est)
 mapper = lambda i: np.where(cluster_indicators_est == i)[0]
