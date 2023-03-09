@@ -113,7 +113,6 @@ def generate_data_gm(N, num_clusters, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_
     # Draw datapoints
     K = len(mu_G)
     x = np.empty((N,K))
-    j = 0
     for i in range(N):
         x[i,:] = multivariate_normal.rvs(mean = cluster_means[indicator_array[i]], cov = sigma_U, size = 1)
             
@@ -126,7 +125,6 @@ def generate_data_gm(N, num_clusters, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_
         colormap = plt.cm.get_cmap('tab20', num_clusters)
         plt.title("Data")
         plt.scatter(cluster_means[:,0], cluster_means[:,1], c = colormap(range(num_clusters)), marker = "o")
-        j = 0
         plt.scatter(x[:,0], x[:,1], c = colormap(indicator_array), marker = ".")
         
     return indicator_array, cluster_assignements, cluster_means, x, y

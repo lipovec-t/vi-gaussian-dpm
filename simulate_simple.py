@@ -19,6 +19,7 @@ params = Params()
 # generate data
 indicator_array, cluster_assignments, cluster_means, x, y = \
     generate_data(params)
+params.true_assignment = cluster_assignments
 if params.include_noise == False:
     data = x
 else:
