@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.special import gamma as gamma_func
+from scipy.special import loggamma
 from . import expectations as expec
 
 
@@ -23,7 +23,7 @@ def compute_elbo(alpha, lamda, data, gamma, phi, tau, sigma, mu_G, sigma_G, sigm
     # Term A 
     # NOTE: this term is zero for alpha = 1
     A = (alpha - 1) *  np.sum(expec_log_1minusV)\
-        - (T-1) * (np.log(gamma_func(alpha)) - np.log(gamma_func(1+alpha)))
+        - (T-1) * (loggamma(alpha) - loggamma(1+alpha))
         
     # Term B 
     # with closed exp. family form  for the conjugate prior, i.e., without integration
@@ -51,8 +51,8 @@ def compute_elbo(alpha, lamda, data, gamma, phi, tau, sigma, mu_G, sigma_G, sigm
     # Term E
     E_1 = (gamma_temp[:,0] - np.ones(T-1)) * expec_log_V
     E_2 = (gamma_temp[:,1] - np.ones(T-1)) * expec_log_1minusV
-    E_3 = np.log(gamma_func(gamma_temp[:,0])) + np.log(gamma_func(gamma_temp[:,1])) \
-          - np.log(gamma_func(gamma_temp[:,0] + gamma_temp[:,1]))
+    E_3 = loggamma(gamma_temp[:,0]) + loggamma(gamma_temp[:,1]) \
+          - loggamma(gamma_temp[:,0] + gamma_temp[:,1])
     E = np.sum(E_1 + E_2 - E_3)
     
     # Term F
