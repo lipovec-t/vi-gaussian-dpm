@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import multivariate_normal
+from scipy.stats import multivariate_normal, multinomial
 from . import restaurant_process
 
 def generate_data(params):
@@ -29,10 +29,8 @@ def generate_data(params):
             generate_data_rp(N, alpha_MFM, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
                           restaurant_process.rp_mfm, plot_data)
     elif data_type.lower() == "gm":
-        num_clusters = params.num_clusters
-        indicator_array, cluster_assignments, cluster_means, data, _ = \
-            generate_data_gm(N, num_clusters, mu_G, sigma_G, mu_U, sigma_U, mu_V,
-                             sigma_V, plot_data)
+        indicator_array, cluster_assignments, cluster_means, x, y = \
+            generate_data_gm2(N, sigma_U, plot_data)
     elif data_type.lower() == "load":
         filename = params.filename
         x = np.load(filename)
@@ -113,7 +111,6 @@ def generate_data_gm(N, num_clusters, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_
     # Draw datapoints
     K = len(mu_G)
     x = np.empty((N,K))
-    j = 0
     for i in range(N):
         x[i,:] = multivariate_normal.rvs(mean = cluster_means[indicator_array[i]], cov = sigma_U, size = 1)
             
@@ -126,7 +123,41 @@ def generate_data_gm(N, num_clusters, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_
         colormap = plt.cm.get_cmap('tab20', num_clusters)
         plt.title("Data")
         plt.scatter(cluster_means[:,0], cluster_means[:,1], c = colormap(range(num_clusters)), marker = "o")
-        j = 0
+        plt.scatter(x[:,0], x[:,1], c = colormap(indicator_array), marker = ".")
+        
+    return indicator_array, cluster_assignements, cluster_means, x, y
+
+def generate_data_gm2(N, sigma_U, plot):
+    """
+    Generation of data according to a Gaussian mixture
+    For DPM and MFM comparison
+    """
+    #indicator_array = np.zeros(N, int)
+    num_clusters = 8
+    # generate cluster assignments
+    weights = np.ones(num_clusters) / num_clusters
+    multinomialDist = multinomial(1, weights)
+    cluster_assignements = multinomialDist.rvs(N)
+    indicator_array  = np.where(cluster_assignements == 1)[1]
+
+    # generate cluster means
+    cluster_means = np.array([[-6,-2.5],[-6,2.5],[6,2.5],[6,-2.5],\
+                              [-2,-2.5],[-2,2.5],[2,2.5],[2,-2.5]])
+
+    # Draw datapoints
+    K = cluster_means.shape[1]
+    x = np.empty((N,K))
+    for i in range(N):
+        x[i,:] = multivariate_normal.rvs(mean = cluster_means[indicator_array[i]], cov = sigma_U, size = 1)
+            
+    # Measurement noise
+    y = x
+
+    if plot:       
+        plt.figure()
+        colormap = plt.cm.get_cmap('tab20', num_clusters)
+        plt.title("Data")
+        plt.scatter(cluster_means[:,0], cluster_means[:,1], c = colormap(range(num_clusters)), marker = "o")
         plt.scatter(x[:,0], x[:,1], c = colormap(indicator_array), marker = ".")
         
     return indicator_array, cluster_assignements, cluster_means, x, y

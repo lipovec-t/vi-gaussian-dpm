@@ -65,18 +65,18 @@ def _init(params):
         phi_init = np.zeros((N,T,1))
         T_true = params.true_assignment.shape[1]
         phi_init[:,:T_true,0] = params.true_assignment
-    elif params.init_type.lower == 'permute':
+    elif params.init_type.lower() == 'permute':
         num_perm = params.num_permutations
         rand_indicators = [np.random.randint(0,T,N) for i in range(num_perm)]
         phi_init = np.zeros((N,T,num_perm))
         for j in range(num_perm):
             for k in range(N):
                phi_init[k,rand_indicators[j][k],j] = 1
-    elif params.init_type == 'unique':
+    elif params.init_type.lower() == 'unique':
         T = N
         phi_init = np.eye(N)
         phi_init = np.expand_dims(phi_init, axis=2)
-    elif params.initType == 'allinone':
+    elif params.init_type.lower() == 'allinone':
         num_perm = T
         rand_indicators = [i*np.ones(T,int) for i in range(num_perm)]
         phi_init = np.zeros((N,T,num_perm))
