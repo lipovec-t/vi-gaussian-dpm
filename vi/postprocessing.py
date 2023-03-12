@@ -187,6 +187,52 @@ def reduce_results(results):
             results_reduced[key] = results[key][indicators_unique]
     return results_reduced
 
+def est_object_positions(y, results, params):
+    """
+    Computes the MMSE estimator of the objects position x given noisy y.
+    Model: y_n = x_n + v_n where v is AWGN. 
+
+    Parameters
+    ----------
+    results_reduced : dict
+        Estimated statistics of x.
+    params : Params
+        Model statistics (Covariance of x and v).
+
+    Returns
+    -------
+    Estimated object positions x_est.
+
+    """
+    indicator_array_est = results["Estimated Cluster Indicators"]
+    cluster_means_est = results["Estimated Cluster Means" ]
+    mean_x = cluster_means_est[indicator_array_est,:]
+    mmse_weight = np.matmul(params.sigma_U, params.sigma_inv)
+    weighted_centered_x = np.einsum('ij,kj->ki', mmse_weight, y - mean_x)
+    x_est = mean_x + weighted_centered_x
+    return x_est
+
+def mse(actual, predicted, normalizer):
+    """
+    Compute Mean Square Error (MSE) between actual and predicted value.
+
+    Parameters
+    ----------
+    actual : ndarray
+        True data values.
+    predicted : ndarray
+        Actual data values.
+    normalizer : float
+        Normalizing constant.
+
+    Returns
+    -------
+    MSE.
+
+    """
+    MSE = 1/normalizer * np.sum(np.linalg.norm(actual - predicted, axis=1)**2)
+    return MSE
+    
 def plot_clustering(data, title, indicatorArray, meanArray):
     """
     Plot data with cluster indicators and cluster means.
