@@ -1,7 +1,35 @@
-# TODO - each of the following shall be represented by its own function
-# full postprocessing that includes everything below, can be called in sim file
 import numpy as np
- 
+
+def full_postprocessing(data, phi, gamma, tau, plot_results):
+    # number of mixture componentes in the fitted model
+    T = gamma.shape[0]
+    
+    # MAP estimate of the cluster assignements
+    cluster_indicator_est = est_clustering_map(phi)
+    
+    # MMSE estimate of the cluster weights
+    cluster_weights_est = est_cluster_weights_mmse(gamma)
+    
+    # MMSE estimate of the cluster means 
+    cluster_means_est = est_cluster_means_mmse(tau)
+    
+    # Sample mean of the clusters
+    cluster_sample_mean, cluster_sample_weight, _ = \
+        est_cluster_sample_mean(data, cluster_indicator_est, T)
+        
+    # Put results in dictionary
+    results = {
+        "Estimated Cluster Indicators"  : cluster_indicator_est,
+        "Estimated Cluster Weights"     : cluster_weights_est,
+        "Estimated Cluster Means"       : cluster_means_est,
+        "Sample Mean of Clusters"       : cluster_sample_mean,
+        "Sample Weight of Clusters"     : cluster_sample_weight
+        }
+    # Get reduced results
+    results_reduced = reduce_results(results)
+    
+    return results, results_reduced
+
 def est_clustering_map(phi):
     """
     MAP estimates of cluster assignments given soft assignments.
@@ -61,7 +89,7 @@ def est_cluster_means_mmse(tau):
     cluster_means_est = tau[:,:-1]/np.repeat(tau[:,-1,np.newaxis], 1, axis=1)
     return cluster_means_est
 
-def cluster_sample_mean(data, cluster_indicators, num_clusters):
+def est_cluster_sample_mean(data, cluster_indicators, num_clusters):
     """
     Sample means of the clusters. Sample mean of empty clusters is set to NaN.
     
@@ -94,7 +122,6 @@ def cluster_sample_mean(data, cluster_indicators, num_clusters):
 def reduce_results(results):
     """
     Deletes results for empty clusters.
-    Assumes that results[0] is given by the estimated cluster indicators.
 
     Parameters
     ----------
@@ -107,14 +134,18 @@ def reduce_results(results):
     number of non-empty clusters.
 
     """
-    num_results = len(results)
-    indicators_unique = np.unique(results[0])
+    eci = results["Estimated Cluster Indicators"]
+    indicators_unique = np.unique(eci)
     # map estimated cluster indicators to a range from 0 to T_est-1
     mapper = lambda i: np.where(indicators_unique == i)[0]
-    cluster_indicator_est = np.array(list(map(mapper, results[0])))[:,0]
-    reduced = [results[i][indicators_unique] for i in range(1, num_results)]
-    reduced.insert(0, cluster_indicator_est)
-    return tuple(reduced)
+    cluster_indicator_est = np.array(list(map(mapper, eci)))[:,0]
+    results_reduced = dict()
+    for key, value in results.items():
+        if key == "Estimated Cluster Indicators":
+            results_reduced[key] = cluster_indicator_est
+        else:
+            results_reduced[key] = results[key][indicators_unique]
+    return results_reduced
 
 # MMSE estimator for cluster assigments?
 # MAP estimator for cluster means?
