@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 def full_postprocessing(data, phi, gamma, tau, plot_results):
     """
@@ -55,6 +56,17 @@ def full_postprocessing(data, phi, gamma, tau, plot_results):
         }
     # Get reduced results
     results_reduced = reduce_results(results)
+    
+    # Plots
+    indicatorArray = results_reduced["Estimated Cluster Indicators"]
+    if plot_results:
+        title = "Clustering DPM - MMSE Mean"
+        meanArray = results_reduced["Estimated Cluster Means"]
+        plot_clustering(data, title, indicatorArray, meanArray)
+        title = "Clustering DPM - Cluster Sample Mean"
+        meanArray = results_reduced["Sample Mean of Clusters" ]
+        plot_clustering(data, title, indicatorArray, meanArray)
+    
     
     return results, results_reduced
 
@@ -175,11 +187,47 @@ def reduce_results(results):
             results_reduced[key] = results[key][indicators_unique]
     return results_reduced
 
+def plot_clustering(data, title, indicatorArray, meanArray):
+    """
+    Plot data with cluster indicators and cluster means.
+
+    Parameters
+    ----------
+    data : ndarray
+        NxK data array.
+    title : string
+        Title of plot.
+    indicatorArray : ndarray
+        Nx1 cluster indicators for data points.
+    meanArray : ndarray
+        Means of clusters.
+
+    Returns
+    -------
+    None.
+
+    """
+    plt.figure()
+    plt.title(title)
+    T = meanArray.shape[0]
+    if T > 10:
+        print('More clusters than colors')
+    colormap = plt.cm.get_cmap('tab20', 10)
+    cx = meanArray[:,0]
+    cy = meanArray[:,1]
+    plt.scatter(cx, cy, c=colormap(np.arange(T)), marker="o")
+    da, dy = data[:,0], data[:,1]
+    plt.scatter(da, dy, c=colormap(indicatorArray), marker='.')
+    
+
+def plot_posterior(means, covariances, weights):
+    #TODO
+    return
+
 # MMSE estimator for cluster assigments?
 # MAP estimator for cluster means?
 # MAP estimator for cluster weights?
 
-# plot posterior (contour plot, only for K=2, maybe also include K=1)
 
 
 
