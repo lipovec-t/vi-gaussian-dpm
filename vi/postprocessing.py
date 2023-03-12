@@ -1,6 +1,34 @@
 import numpy as np
 
 def full_postprocessing(data, phi, gamma, tau, plot_results):
+    """
+    Performs full postprocessing given the simulation results
+
+    Parameters
+    ----------
+    data : ndarray
+        NxK data array.
+    phi : ndarray
+        NxT variational parameter phi representing soft assignments
+    gamma : TYPE
+        Tx2 variational parameter gamma representing determining mixture weight
+        distribution.
+    tau : TYPE
+        Tx(K+1) variational parameter tau describing the exp. fam. mixture 
+        distribution.
+    plot_results : boolean
+        Determines if results shall be plotted.
+
+    Returns
+    -------
+    results : dict
+        Dictonary holding the results for the T mixture components of the 
+        fitted model.
+    results_reduced : dict
+        Dictonary holding the results for the non empty clusters out of the T
+        mixture components.
+
+    """
     # number of mixture componentes in the fitted model
     T = gamma.shape[0]
     
@@ -152,7 +180,7 @@ def reduce_results(results):
 # MAP estimator for cluster weights?
 
 # plot posterior (contour plot, only for K=2, maybe also include K=1)
-# plot estimated cluster assignments, cluster means and cluster weights
+
 
 
 
