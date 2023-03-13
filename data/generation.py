@@ -4,6 +4,28 @@ from scipy.stats import multivariate_normal, multinomial
 from . import restaurant_process
 
 def generate_data(params):
+    """
+    Generates data according to the given parameters.
+
+    Parameters
+    ----------
+    params : dataclass
+        Includes all the model parameters used to generate the data.
+
+    Returns
+    -------
+    indicator_array : ndarray
+        Tx1 array which indicates which data points belongs to which cluster.
+    cluster_assignements : ndarray
+        TxN array of hard cluster assignments.
+    cluster_means : ndarray
+        Cluster means of the Gaussian mixture.
+    x : ndarray
+        NxK array of the generated data.
+    y : ndarray
+        NxK array of the generated data including noise.
+
+    """
     # load config
     data_type   = params.data_type
     N           = params.N
@@ -56,7 +78,44 @@ def generate_data(params):
 def generate_data_rp(N, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, plot,\
                      rp, *args):
     """
-    Generation of data according to DPM or MFM
+    Generates data
+    
+    Parameters
+    ----------
+    N : int
+        Number of datapoints to be generated.
+    mu_G : ndarray
+        Mean of the base distribution used to generate cluster means.
+    sigma_G : ndarray
+        Covariance of the base distribution used to generate the cluster means.
+    mu_U : ndarray
+        Used to determine the cluster means.
+    sigma_U : ndarray
+        Used to determine the cluster variances.
+    mu_V : ndarray
+        Mean of the AWGN.
+    sigma_V : ndarray
+        Covariance of AWGN.
+    plot : boolean
+        Determines if data shall be plotted.
+    rp : function
+        Restaurant process that is used to generate the indicator array.
+    *args : tuple
+        Tuple holding the parameters for the restaurant process.
+
+    Returns
+    -------
+    indicator_array : ndarray
+        Tx1 array which indicates which data points belongs to which cluster.
+    cluster_assignements : ndarray
+        TxN array of hard cluster assignments.
+    cluster_means : ndarray
+        Cluster means of the Gaussian mixture.
+    x : ndarray
+        NxK array of the generated data.
+    y : ndarray
+        NxK array of the generated data including noise.
+
     """
     # define base distribution
     G0 = multivariate_normal(mean = mu_G, cov = sigma_G)
@@ -103,7 +162,7 @@ def generate_data_rp(N, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, plot,\
 def generate_data_gm(N, num_clusters, weights, cluster_means,\
                      mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, plot):
     """
-    Generate data according Gaussian mixture with the given parameters.
+    Generate data according to a Gaussian mixture with the given parameters.
 
     Parameters
     ----------
