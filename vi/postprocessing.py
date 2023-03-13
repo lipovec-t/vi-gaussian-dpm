@@ -51,6 +51,7 @@ def full_postprocessing(data, phi, gamma, tau, plot_results):
         "Estimated Cluster Indicators"  : cluster_indicator_est,
         "Estimated Cluster Weights"     : cluster_weights_est,
         "Estimated Cluster Means"       : cluster_means_est,
+        "Estimated Number of Clusters"  : T,
         "Sample Mean of Clusters"       : cluster_sample_mean,
         "Sample Weight of Clusters"     : cluster_sample_weight
         }
@@ -114,7 +115,7 @@ def est_cluster_weights_mmse(gamma):
 # MMSE estimate for cluster means
 def est_cluster_means_mmse(tau):
     """
-    MMSE stimate of the cluster means given variational parameter tau.
+    MMSE estimate of the cluster means given variational parameter tau.
 
     Parameters
     ----------
@@ -183,6 +184,8 @@ def reduce_results(results):
     for key, value in results.items():
         if key == "Estimated Cluster Indicators":
             results_reduced[key] = cluster_indicator_est
+        elif key == "Estimated Number of Clusters":
+            results_reduced[key] = np.size(indicators_unique)
         else:
             results_reduced[key] = results[key][indicators_unique]
     return results_reduced
