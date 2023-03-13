@@ -153,8 +153,8 @@ def est_cluster_sample_mean(data, cluster_indicators, num_clusters):
     for i in range(N):
         cluster_sample_mean[cluster_indicators[i],:] += data[i]
         counts[cluster_indicators[i]] += 1
-    counts = np.repeat(counts[:,np.newaxis], K, axis=1)
     cluster_sample_weights = np.divide(counts, N)
+    counts = np.repeat(counts[:,np.newaxis], K, axis=1)
     cluster_sample_mean = np.divide(cluster_sample_mean, counts,\
                                     where = counts > 0)
     cluster_sample_mean[counts == 0] = np.nan
