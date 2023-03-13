@@ -26,8 +26,8 @@ def rp_dpm(N, alpha):
         assignment = int(assignment[0])
         assignmentArray[n] = assignment
         
-        # Update the counts for next time, adding a new count if a new group was
-        # created
+        # Update the counts for next time,
+        # adding a new count if a new group was created
         if assignment == len(counts):
             counts.append(0)
           
@@ -36,15 +36,13 @@ def rp_dpm(N, alpha):
     
     return assignmentArray
 
-def rp_mfm(N, beta):
+def rp_mfm(N, alpha, beta):
     """
     Restaurant Process for MFM
     """
     counts = []
     assignmentArray = np.zeros(N, int)
     n = 0
-    # TODO: make lamda a function parameter and rename it
-    lamda = 5
     
     while n < N:
         # Compute the (unnormalized) probabilities of assigning the new object
@@ -55,7 +53,8 @@ def rp_mfm(N, beta):
             assign_probs[i] = counts[i] + beta
         
         t = len(counts)
-        assign_probs[-1] = _V_nt(n+1, t+1, beta, lamda)/_V_nt(n+1, t, beta, lamda) * beta
+        assign_probs[-1] =\
+            _V_nt(n+1, t+1, beta, alpha)/_V_nt(n+1, t, beta, alpha) * beta
         
         # Draw the new object's assignment from the discrete distribution
         assign_probs = assign_probs / sum(assign_probs)
@@ -75,9 +74,9 @@ def rp_mfm(N, beta):
     
     return assignmentArray
 
-def _V_nt(n, t, beta, lamda):
+def _V_nt(n, t, beta, alpha):
     # prior for K
-    p_k = poisson(lamda)
+    p_k = poisson(alpha)
     # TODO: vectorize
     f1 = lambda x,m: prod(x+i for i in range(m)) # function for x^(m)
     f2 = lambda x,m: prod(x-i for i in range(m)) # function for x_(m)

@@ -16,7 +16,7 @@ class Params:
     # DPM
     alpha_DPM = 1
     # MFM
-    alpha_MFM = 1
+    alpha_MFM = 2
     beta_MFM  = 5
     # GM
     num_clusters = 5

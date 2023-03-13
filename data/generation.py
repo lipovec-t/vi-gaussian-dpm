@@ -20,19 +20,26 @@ def generate_data(params):
         # concentration parameter - higher alpha more clusters
         alpha_DPM = params.alpha_DPM
         indicator_array, cluster_assignments, cluster_means, x, y = \
-            generate_data_rp(N, alpha_DPM, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
-                          restaurant_process.rp_dpm, plot_data)
+            generate_data_rp(N, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,\
+                             plot_data,\
+                             restaurant_process.rp_dpm, alpha_DPM)
+                
     elif data_type.lower() == "mfm":
         # kind of concentration parameter - higher alpha more clusters
         alpha_MFM = params.alpha_MFM 
+        beta_MFM  = params.beta_MFM
         indicator_array, cluster_assignments, cluster_means, x, y = \
-            generate_data_rp(N, alpha_MFM, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
-                          restaurant_process.rp_mfm, plot_data)
+            generate_data_rp(N, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
+                             plot_data,\
+                             restaurant_process.rp_mfm, alpha_MFM, beta_MFM)
+                
     elif data_type.lower() == "gm":
         num_clusters = params.num_clusters
         indicator_array, cluster_assignments, cluster_means, data, _ = \
-            generate_data_gm(N, num_clusters, mu_G, sigma_G, mu_U, sigma_U, mu_V,
-                             sigma_V, plot_data)
+            generate_data_gm(N, num_clusters,\
+                             mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,\
+                             plot_data)
+                
     elif data_type.lower() == "load":
         filename = params.filename
         x = np.load(filename)
@@ -44,22 +51,28 @@ def generate_data(params):
         
     return indicator_array, cluster_assignments, cluster_means, x, y 
 
-def generate_data_rp(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, rp, plot):
+def generate_data_rp(N, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, plot,\
+                     rp, *args):
     """
     Generation of data according to DPM or MFM
     """
-    # base distribution
+    # define base distribution
     G0 = multivariate_normal(mean = mu_G, cov = sigma_G)
     
     # Restaurant process
-    indicator_array = rp(N, alpha)
+    indicator_array = rp(N, *args)
     num_clusters = max(indicator_array)+1
+    
+    # Draw cluster means from base distribution
     cluster_means = G0.rvs(num_clusters)
+    
+    # Compute cluster assignments
     cluster_assignements = np.zeros((N,num_clusters))
     # TODO: vectorize this
     for i in range(N):
         cluster_assignements [i,indicator_array[i]] = 1
     
+    # Add dim if there is only one cluster such that cluster_means -> (1,K)
     if num_clusters == 1:
         cluster_means = np.repeat(cluster_means[np.newaxis,:], 1, axis = 0)
     
@@ -78,8 +91,10 @@ def generate_data_rp(N, alpha, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, rp, 
         plt.figure()
         colormap = plt.cm.get_cmap('tab20', num_clusters)
         plt.title("Data")
-        plt.scatter(cluster_means[:,0], cluster_means[:,1], c = colormap(range(num_clusters)), marker = "o")
-        plt.scatter(x[:,0], x[:,1], c = colormap(indicator_array), marker = '.')
+        cx, cy = cluster_means[:,0], cluster_means[:,1]
+        plt.scatter(cx, cy, c = colormap(range(num_clusters)), marker = "o")
+        dx, dy = x[:,0], x[:,1]
+        plt.scatter(dx, dy, c = colormap(indicator_array), marker = '.')
     
     return indicator_array, cluster_assignements, cluster_means, x, y
 
