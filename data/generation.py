@@ -233,43 +233,12 @@ def generate_data_gm(N, num_clusters, weights, cluster_means,\
         plt.figure()
         colormap = plt.cm.get_cmap('tab20', num_clusters)
         plt.title("Data")
-        plt.scatter(cluster_means[:,0], cluster_means[:,1], c = colormap(range(num_clusters)), marker = "o")
-        plt.scatter(x[:,0], x[:,1], c = colormap(indicator_array), marker = ".")
+        cx, cy = cluster_means[:,0], cluster_means[:,1]
+        plt.scatter(cx, cy, c = colormap(range(num_clusters)), marker = "o")
+        dx, dy = x[:,0], x[:,1]
+        plt.scatter(dx, dy, c = colormap(indicator_array), marker = ".")
         
     return indicator_array, cluster_assignements, cluster_means, x, y
 
-def generate_data_gm2(N, sigma_U, plot):
-    """
-    Generation of data according to a Gaussian mixture
-    For DPM and MFM comparison
-    """
-    #indicator_array = np.zeros(N, int)
-    num_clusters = 8
-    # generate cluster assignments
-    weights = np.ones(num_clusters) / num_clusters
-    multinomialDist = multinomial(1, weights)
-    cluster_assignements = multinomialDist.rvs(N)
-    indicator_array  = np.where(cluster_assignements == 1)[1]
 
-    # generate cluster means
-    cluster_means = np.array([[-6,-2.5],[-6,2.5],[6,2.5],[6,-2.5],\
-                              [-2,-2.5],[-2,2.5],[2,2.5],[2,-2.5]])
-
-    # Draw datapoints
-    K = cluster_means.shape[1]
-    x = np.empty((N,K))
-    for i in range(N):
-        x[i,:] = multivariate_normal.rvs(mean = cluster_means[indicator_array[i]], cov = sigma_U, size = 1)
-            
-    # Measurement noise
-    y = x
-
-    if plot:       
-        plt.figure()
-        colormap = plt.cm.get_cmap('tab20', num_clusters)
-        plt.title("Data")
-        plt.scatter(cluster_means[:,0], cluster_means[:,1], c = colormap(range(num_clusters)), marker = "o")
-        plt.scatter(x[:,0], x[:,1], c = colormap(indicator_array), marker = ".")
-        
-    return indicator_array, cluster_assignements, cluster_means, x, y
 

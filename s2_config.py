@@ -20,7 +20,12 @@ class Params:
     alpha_MFM = 1
     beta_MFM  = 5
     # GM
-    num_clusters = 5
+    weights_GM       = np.ones(4) / 4
+    cluster_means_GM = np.array([]) # if empty mu_G and sigma_G is used to generate means
+    if cluster_means_GM.size != 0:
+        num_clusters_GM = cluster_means_GM.shape[0]
+    else:
+        num_clusters_GM = weights_GM.size
     # Load
     filename = "data.npy"
     # data dimension
