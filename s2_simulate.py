@@ -11,7 +11,7 @@ from tqdm import tqdm
 from data.generation import generate_data
 from vi.cavi import coordinates_ascent
 from vi import postprocessing as pp
-from config_full import Params
+from s2_config import Params
 
 # random seed for testing purposes
 np.random.seed(255)

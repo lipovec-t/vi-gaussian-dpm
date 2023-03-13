@@ -8,7 +8,7 @@ import numpy as np
 from data.generation import generate_data
 from vi.cavi import coordinates_ascent
 from vi import postprocessing as pp
-from config_simple import Params
+from s1_config import Params
 
 # random seed for testing purposes
 np.random.seed(255)
