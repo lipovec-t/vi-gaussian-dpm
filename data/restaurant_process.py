@@ -1,6 +1,6 @@
-from math import prod
 import numpy as np
 from scipy.stats import multinomial, poisson
+from scipy.special import loggamma
 
 def rp_dpm(N, alpha):
     """
@@ -105,6 +105,7 @@ def rp_mfm(N, alpha, beta):
 def _V_nt(n, t, beta, alpha):
     """
     Coefficient V_n(t) of the exchangable distribution function of a MFM model.
+    The code for this function is based on the miller paper.
 
     Parameters
     ----------
@@ -119,21 +120,30 @@ def _V_nt(n, t, beta, alpha):
 
     Returns
     -------
-    v_nt : TYPE
-        DESCRIPTION.
+    v_nt : float
+        Log of the Coefficient V_n(t).
 
     """
-    # prior for K
+    tolerance = 1e-12
     p_k = poisson(alpha)
-    # TODO: vectorize
-    f1 = lambda x,m: prod(x+i for i in range(m)) # function for x^(m)
-    f2 = lambda x,m: prod(x-i for i in range(m)) # function for x_(m)
-    v_nt = 0
-    k=1
-    term = np.inf
-    while k < 50:
-        term = f2(k,t) / f1(beta*k,n) * p_k.pmf(k-1)
-        v_nt += term
-        k += 1
-    return v_nt
+    a,c,k,p = 0, -np.inf, 1, 0
+    # Note: The first condition is false when a = c = -Inf
+    while np.abs(a-c) > tolerance or p < 1.0-tolerance:  
+        if k >= t:
+            a = c
+            b = loggamma(k+1) - loggamma(k-t+1)\
+                - loggamma(k*beta+n) + loggamma(k*beta) + np.log(p_k.pmf(k-1))
+            c = logsumexp(a,b)
+        p += np.exp(np.log(p_k.pmf(k-1)))
+        k = k+1
+    log_v = c
+  
+    return log_v
+
+def logsumexp(a,b):
+    m = np.maximum(a,b)
+    if m == -np.inf:
+        return -np.inf
+    else:
+        return m + np.log(np.exp(a-m)+np.exp(b-m))
 

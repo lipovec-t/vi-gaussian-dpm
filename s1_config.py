@@ -16,8 +16,8 @@ class Params:
     # DPM
     alpha_DPM = 1
     # MFM
-    alpha_MFM = 2
-    beta_MFM  = 5
+    alpha_MFM = 5
+    beta_MFM  = 1
     # GM
     weights_GM       = np.ones(4) / 4
     cluster_means_GM = np.array([]) # if empty mu_G and sigma_G is used to generate means
