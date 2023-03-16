@@ -259,9 +259,9 @@ def plot_clustering(data, title, indicatorArray, meanArray):
     plt.figure()
     plt.title(title)
     T = meanArray.shape[0]
-    if T > 10:
+    if T > 20:
         print('More clusters than colors')
-    colormap = plt.cm.get_cmap('tab20', 10)
+    colormap = plt.cm.get_cmap('tab20', 20)
     cx = meanArray[:,0]
     cy = meanArray[:,1]
     plt.scatter(cx, cy, c=colormap(np.arange(T)), marker="o")

@@ -61,6 +61,8 @@ def compute_elbo(alpha, lamda, data, gamma, phi, tau, sigma, mu_G, sigma_G, sigm
     F = np.sum(np.log(h) + np.sum(tau[:,:-1]*expec_eta, axis=1) - tau[:,-1]*expec_logpart_eta - a)
     
     # Term G
+    # change 0's to smallest number
+    phi[np.where(phi==0)] = np.nextafter(0, 1)
     G = np.sum(phi*np.log(phi))
     
     # ELBO
