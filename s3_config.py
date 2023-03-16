@@ -43,9 +43,9 @@ class Params:
     sigma_V = np.eye(K)
     include_noise = False
     # number of data points
-    N = 100
+    N = 400
     # plot data if true
-    plot_data = True
+    plot_data = False
     
     # covariance matrix and inverse for CAVI
     sigma = sigma_U+sigma_V if include_noise else sigma_U
@@ -56,7 +56,7 @@ class Params:
     lamda1_temp = np.matmul(np.linalg.inv(sigma), sigma_G)
     lamda[-1] = 1/lamda1_temp[0,0]
     lamda[:-1] = lamda[-1]*mu_G
-    alpha = 1
+    alpha = 2
     
     # parameters for the algorithm
     # Init type:
@@ -65,8 +65,8 @@ class Params:
     # Permute   - use random hard assignments
     # Unique    - assign each datapoint to its own cluster from 1 to T
     # AllInOne  - Put all datapoints in one cluster
-    init_type = 'uniform'
+    init_type = 'permute'
     # true_assignment should be added during runtime
-    num_permutations = 30 # only for random permuated initialization
+    num_permutations = 10 # only for random permuated initialization
     max_iterations = 100
     T = 20 # truncation
