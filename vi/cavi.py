@@ -1,6 +1,8 @@
 # Third party imports
 import numpy as np
 from scipy.cluster.vq import kmeans2
+from sklearn.cluster import DBSCAN
+from sklearn.preprocessing import StandardScaler
 
 # Local application imports
 from . import expectations as expec
@@ -91,6 +93,21 @@ def _init(data, params):
         if cluster_init == 0:
             cluster_init = 1
         _, label = kmeans2(data, cluster_init, minit='points')
+        phi_init = np.zeros((N,T,1))
+        for k in range(N):
+           phi_init[k,label[k]] = 1
+    elif params.init_type.lower() == 'dbscan':
+        data_transformed = StandardScaler().fit_transform(data)
+        db = DBSCAN(eps=0.3, min_samples=10).fit(data_transformed)
+        label = db.labels_
+        n_noise = list(label).count(-1)
+        n_clusters = len(set(label)) - (1 if -1 in label else 0)
+        if n_clusters > T:
+            error_msg = "Number of clusters found by DBSCAN is higher than"\
+                         +"the truncation parameter"
+            raise ValueError(error_msg)
+        # assign noisy labels to random cluster
+        label[label==-1] = np.random.randint(0, max(label)+1, n_noise)
         phi_init = np.zeros((N,T,1))
         for k in range(N):
            phi_init[k,label[k]] = 1

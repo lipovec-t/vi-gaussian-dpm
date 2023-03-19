@@ -66,6 +66,7 @@ class Params:
     # Unique    - assign each datapoint to its own cluster from 1 to T
     # AllInOne  - Put all datapoints in one cluster
     # Kmeans    - Use hard assignments of kmeans
+    # DBSCAN    - Use hard assignments of dbscan
     init_type = 'uniform'
     # true_assignment should be added during runtime
     num_permutations = 10 # only for random permuated initialization
