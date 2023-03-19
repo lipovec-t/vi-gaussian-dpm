@@ -1,5 +1,6 @@
 # Third party imports
 import numpy as np
+from scipy.cluster.vq import kmeans2
 
 # Local application imports
 from . import expectations as expec
@@ -13,7 +14,7 @@ from vi.elbo import compute_elbo
 
 def coordinates_ascent(data, params):
     # load params
-    phi_init        = _init(params)
+    phi_init        = _init(data, params)
     max_iterations  = params.max_iterations
     alpha           = params.alpha
     sigma           = params.sigma
@@ -53,7 +54,7 @@ def coordinates_ascent(data, params):
             
     return elbo_final, tau, gamma, phi
 
-def _init(params):
+def _init(data, params):
     # truncation parameter and number of data points
     T = params.T
     N = params.N
@@ -83,6 +84,16 @@ def _init(params):
         for j in range(num_perm):
             for k in range(N):
                 phi_init[k,rand_indicators[j],j] = 1
+    elif params.init_type.lower() == 'kmeans':
+        # round mean of poisson prior to nearest int
+        cluster_init = round(params.alpha * np.log((params.alpha+N)/params.alpha))
+        # have at least one cluster
+        if cluster_init == 0:
+            cluster_init = 1
+        _, label = kmeans2(data, cluster_init, minit='points')
+        phi_init = np.zeros((N,T,1))
+        for k in range(N):
+           phi_init[k,label[k]] = 1
     return phi_init
 
 def update_gamma(phi, alpha):
@@ -99,11 +110,11 @@ def update_tau(data, lamda, phi):
     T = phi.shape[1]
     K = data.shape[1]
     tau = np.empty((T,K+1))
-    phi_temp = np.repeat(phi, 2, axis=1)
+    phi_temp = np.repeat(phi, K, axis=1)
     data_temp = np.tile(data,T)
     weighted_data = phi_temp*data_temp
     lamda_temp = np.tile(lamda[:-1],T)
-    tau[:,:-1] = np.reshape(lamda_temp + np.sum(weighted_data, axis=0),(-1,2))
+    tau[:,:-1] = np.reshape(lamda_temp + np.sum(weighted_data, axis=0),(-1,K))
     tau[:,-1] = lamda[-1] + np.sum(phi, axis=0)
     return tau
 

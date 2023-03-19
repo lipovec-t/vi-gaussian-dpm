@@ -65,7 +65,8 @@ class Params:
     # Permute   - use random hard assignments
     # Unique    - assign each datapoint to its own cluster from 1 to T
     # AllInOne  - Put all datapoints in one cluster
-    init_type = 'Uniform'
+    # Kmeans    - Use hard assignments of kmeans
+    init_type = 'uniform'
     # true_assignment should be added during runtime
     num_permutations = 10 # only for random permuated initialization
     max_iterations = 100

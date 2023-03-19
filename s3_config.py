@@ -56,7 +56,7 @@ class Params:
     lamda1_temp = np.matmul(np.linalg.inv(sigma), sigma_G)
     lamda[-1] = 1/lamda1_temp[0,0]
     lamda[:-1] = lamda[-1]*mu_G
-    alpha = 2
+    alpha = 1.5
     
     # parameters for the algorithm
     # Init type:
@@ -65,6 +65,7 @@ class Params:
     # Permute   - use random hard assignments
     # Unique    - assign each datapoint to its own cluster from 1 to T
     # AllInOne  - Put all datapoints in one cluster
+    # Kmeans    - Use hard assignments of kmeans
     init_type = 'permute'
     # true_assignment should be added during runtime
     num_permutations = 10 # only for random permuated initialization

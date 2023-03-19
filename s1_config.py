@@ -36,13 +36,13 @@ class Params:
     mu_U    = np.zeros(K)
     # NOTE: sigma_G must be a scaled version of sigma in our conjugate model
     # where sigma is either sigma_U or sigma_U+sigma_V is noise is included
-    sigma_U = 0.5*np.eye(K)
+    sigma_U = 1*np.eye(K)
     # measurement noise
     mu_V    = np.zeros(K)
     sigma_V = np.eye(K)
     include_noise = False
     # number of data points
-    N = 100
+    N = 50
     # plot data if true
     plot_data = True
     
@@ -64,6 +64,7 @@ class Params:
     # Permute   - use random hard assignments
     # Unique    - assign each datapoint to its own cluster from 1 to T
     # AllInOne  - Put all datapoints in one cluster
+    # Kmeans    - Use hard assignments of kmeans
     init_type = 'uniform'
     # true_assignment should be added during runtime
     num_permutations = 30 # only for random permuated initialization
