@@ -37,7 +37,7 @@ class Params:
     mu_U    = np.zeros(K)
     # NOTE: sigma_G must be a scaled version of sigma in our conjugate model
     # where sigma is either sigma_U or sigma_U+sigma_V is noise is included
-    sigma_U = 0.5*np.eye(K)
+    sigma_U = 1*np.eye(K)
     # measurement noise
     mu_V    = np.zeros(K)
     sigma_V = np.eye(K)
@@ -56,7 +56,7 @@ class Params:
     lamda1_temp = np.matmul(np.linalg.inv(sigma), sigma_G)
     lamda[-1] = 1/lamda1_temp[0,0]
     lamda[:-1] = lamda[-1]*mu_G
-    alpha = 1.5
+    alpha = 1.4
     
     # parameters for the algorithm
     # Init type:
