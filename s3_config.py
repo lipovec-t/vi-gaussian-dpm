@@ -45,7 +45,7 @@ class Params:
     # number of data points
     N = 400
     # plot data if true
-    plot_data = False
+    plot_data =False
     
     # covariance matrix and inverse for CAVI
     sigma = sigma_U+sigma_V if include_noise else sigma_U
