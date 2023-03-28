@@ -41,30 +41,37 @@ if save_results:
     pp.save_results(sim_data, 'res-')
         
 # produce desired results
-mean_cluster_number = 0
+est_cluster_number = np.zeros(MC_runs)
 counter = 0
-mean_distances = [0 for j in range(MC_runs)]
+cluster_mean_distances = np.zeros(MC_runs)
+accuracy_score = np.zeros(MC_runs)
+OSPA = np.zeros(MC_runs)
+
 for i in range(MC_runs):
-    cluster_means = sim_data[i]["True Cluster Means"]
-    T_est = sim_data[i]["Estimated Number of Clusters"]
-    if T_est == 8:
-        counter += 1
-    cluster_mean_est = sim_data[i]["Estimated Cluster Means"]
-    mean_cluster_number += T_est
-    metric = np.zeros((T_est, 8))
-    for j in range(T_est):
-        distance = np.linalg.norm(cluster_means-cluster_mean_est[j,:], axis=1)
-        metric[j,:] = distance
-    min_distance = np.min(metric, axis=0)
-    mean_distances[i] = np.mean(min_distance)
+    est_cluster_number[i] = sim_data[i]["Estimated Number of Clusters"]
+    true_cluster_means = sim_data[i]["True Cluster Means"]
+    est_cluster_means = sim_data[i]["Reordered Estimated Cluster Means"]
+    true_indicators = sim_data[i]["True Cluster Indicators"]
+    est_indicators = sim_data[i]["Relabelled Estimated Cluster Indicators"]
+    mean_indicators = sim_data[i]["Mean Indicators"]
     
-mean_cluster_number = mean_cluster_number / MC_runs
-accuracy_clusters = counter / MC_runs * 100
-accuracy_means = np.mean(mean_distances)
+    accuracy_score[i] = pp.accuracy_score(true_indicators, est_indicators)
+    
+    OSPA[i], cluster_mean_distances[i] = pp.OSPA(true_cluster_means,\
+                                                 est_cluster_means,\
+                                                 mean_indicators)
+    
+mean_cluster_number = np.mean(est_cluster_number)
+accuracy_clusters = np.mean(est_cluster_number == 8) * 100
+accuracy_means = np.mean(cluster_mean_distances)
+mean_accuracy_score = np.mean(accuracy_score)
+mean_OSPA = np.mean(OSPA)
 
 
 print("\n")
-print("DPM SIMULATION")
+print("MFM SIMULATION")
 print(f"Mean Estimated Clusters = {mean_cluster_number}")
 print(f"Accuracy Estimated Cluster numbers = {accuracy_clusters}%")
 print(f"Average distance to real cluster means = {accuracy_means}")
+print(f"Average accuracy score = {mean_accuracy_score}")
+print(f"Average OSPA = {mean_OSPA}")

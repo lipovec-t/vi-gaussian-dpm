@@ -442,6 +442,10 @@ def save_results(result,name):
     fp.close()
     with open(filename, 'wb') as f:
         pickle.dump(result, f)
+        
+def load_results(filename):
+    with open(filename, 'rb') as f: 
+           return pickle.load(f)
 
 # MMSE estimator for cluster assigments?
 # MAP estimator for cluster means?

@@ -28,7 +28,8 @@ for i in range(MC_runs):
     OSPA[i], cluster_mean_distances[i] = pp.OSPA(true_cluster_means,\
                                                  est_cluster_means,\
                                                  mean_indicators)
-    
+     
+        
 mean_cluster_number = np.mean(est_cluster_number)
 accuracy_clusters = np.mean(est_cluster_number == 8) * 100
 accuracy_means = np.mean(cluster_mean_distances)
