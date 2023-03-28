@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import time
+import pickle
 
 def full_postprocessing(data, phi, gamma, tau, plot_results):
     """
@@ -272,6 +274,29 @@ def plot_clustering(data, title, indicatorArray, meanArray):
 def plot_posterior(means, covariances, weights):
     #TODO
     return
+
+def save_results(result,name):
+    """
+    save variable result as pickle file
+
+    Parameters
+    ----------
+    result : TYPE
+        DESCRIPTION.
+    name : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    filename = name + timestr + '.pkl'
+    fp = open(filename, 'x')
+    fp.close()
+    with open(filename, 'wb') as f:
+        pickle.dump(result, f)
 
 # MMSE estimator for cluster assigments?
 # MAP estimator for cluster means?
