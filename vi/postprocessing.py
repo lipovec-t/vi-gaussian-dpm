@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import time
 import pickle
 from scipy.spatial import distance
+from sklearn.metrics import accuracy_score as acc_score
 
 def full_postprocessing(data_dict, phi, gamma, tau, plot_results):
     """
@@ -303,7 +304,84 @@ def mse(actual, predicted, normalizer):
     """
     MSE = 1/normalizer * np.sum(np.linalg.norm(actual - predicted, axis=1)**2)
     return MSE
+
+def accuracy_score(ground_truth, predicted):
+    """
+    Computes accuracy score with sklearn library.
+    Number of correctly labelled data points divided by total # data points.
+
+    Parameters
+    ----------
+    ground_truth : ndarray of shape (N,)
+        Ground truth cluster labels.
+    predicted : ndarray of shape (N,)
+        Predicted cluster labels.
+
+    Returns
+    -------
+    float
+        Accuaracy score.
+
+    """
+    return acc_score(ground_truth, predicted)
+
+def OSPA(x, y, indicators):
+    """
+    Computes the traditional OSPA metric according to:
+    https://de.mathworks.com/help/fusion/ref/trackospametric-system-object.html
+
+    Parameters
+    ----------
+    x : ndarray of shape (N,K)
+        Ground truth positions.
+    y : ndarray of shape (M,K)
+        Estimated positions.
+    indicators : ndarray of shape (M,)
+        Association of y to x.
+
+    Returns
+    -------
+    OSPA : float
+        Traditional OSPA metric.
+
+    """
+    # number of objects
+    x_len = x.shape[0]
+    y_len = y.shape[0]
     
+    # cut-off distance
+    c = 1
+    
+    # order of the ospa metric
+    p = 2
+    
+    # save association between objects in x_temp and y_temp
+    if x_len <= y_len:
+        m, n = x_len, y_len
+        indicators = indicators[:x_len]
+        y_temp = y[indicators]
+    else:
+        m, n = y_len, x_len
+        y_temp = y
+    x_temp = x[indicators]
+    
+    # distances between given objects
+    distanceMatrix = distance.cdist(x_temp, y_temp)
+    # normalized error squared
+    distanceVector = 1/m * np.diag(distanceMatrix)**p
+    # cut-off based distance
+    d_c = np.minimum(distanceVector, c)
+    # localization error component
+    d_loc = 1/n * np.sum(d_c**p)
+    # cardinality error component
+    d_card = (n-m)/n * c**p
+    # traditional OSPA metric
+    OSPA = (d_loc + d_card)**(1/p)
+    # average eucledian distances between objects
+    dist = np.mean(np.diag(distanceMatrix))
+     
+    return OSPA, dist 
+   
 def plot_clustering(data, title, indicatorArray, meanArray, meanIndicators):
     """
     Plot data with cluster indicators and cluster means.
