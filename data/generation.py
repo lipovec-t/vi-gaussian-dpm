@@ -73,7 +73,15 @@ def generate_data(params):
         y = x
         indicator_array, cluster_assignments, cluster_means = [], [], []
         
-    return indicator_array, cluster_assignments, cluster_means, x, y 
+    data = {
+        "True Cluster Indicators"       : indicator_array,
+        "True Cluster Assignments"      : cluster_assignments,
+        "True Cluster Means"            : cluster_means,
+        "True Number of Clusters"       : cluster_means.shape[0],
+        "Datapoints"                    : x,
+        "Noisy Datapoints"              : y
+        }
+    return data 
 
 def generate_data_rp(N, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, plot,\
                      rp, *args):

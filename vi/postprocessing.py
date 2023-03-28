@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import time
 import pickle
 
-def full_postprocessing(data, phi, gamma, tau, plot_results):
+def full_postprocessing(data_dict, phi, gamma, tau, plot_results):
     """
     Performs full postprocessing given the simulation results
 
@@ -32,6 +32,9 @@ def full_postprocessing(data, phi, gamma, tau, plot_results):
         mixture components.
 
     """
+    # Extract datapoints form data_dict
+    data = data_dict["Datapoints"]
+    
     # number of mixture componentes in the fitted model
     T = gamma.shape[0]
     

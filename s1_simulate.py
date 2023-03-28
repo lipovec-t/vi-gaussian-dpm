@@ -17,19 +17,17 @@ np.random.seed(255)
 params = Params()
 
 # generate data
-indicator_array, cluster_assignments, cluster_means, x, y = \
-    generate_data(params)
-params.true_assignment = cluster_assignments
+data_dict = generate_data(params)
 if params.include_noise == False:
-    data = x
+    data = data_dict["Datapoints"]
 else:
-    data = y
+    data = data_dict["Noisy Datapoints"]
 
 # start timer
 t_0 = timeit.default_timer()
 
 # CAVI
-elbo_final, tau, gamma, phi = coordinates_ascent(data, params)
+elbo_final, tau, gamma, phi = coordinates_ascent(data_dict, params)
 # end timer
 
 # end timer and compute elapsed time
@@ -37,6 +35,6 @@ t_1 = timeit.default_timer()
 runtime = t_1 - t_0
 
 # postprocessing
-results, results_reduced = pp.full_postprocessing(data, phi, gamma, tau, True)
+results, results_reduced = pp.full_postprocessing(data_dict, phi, gamma, tau, True)
 
 

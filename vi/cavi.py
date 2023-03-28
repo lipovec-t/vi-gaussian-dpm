@@ -4,6 +4,7 @@ from scipy.cluster.vq import kmeans2
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 
+
 # Local application imports
 from . import expectations as expec
 from vi.elbo import compute_elbo
@@ -14,9 +15,9 @@ from vi.elbo import compute_elbo
 # tau   -> T x (K+1), [tau_t11 ... tau_t1K, tau_t2]
 # lamda -> (K+1) x 1, [lamda_t1, lamda_t2]  
 
-def coordinates_ascent(data, params):
+def coordinates_ascent(data_dict, params):
     # load params
-    phi_init        = _init(data, params)
+    phi_init        = _init(data_dict, params)
     max_iterations  = params.max_iterations
     alpha           = params.alpha
     sigma           = params.sigma
@@ -24,6 +25,12 @@ def coordinates_ascent(data, params):
     mu_G            = params.mu_G
     sigma_G         = params.sigma_G
     lamda           = params.lamda 
+    
+    # extract data from data_dict
+    if params.include_noise:
+        data = data_dict["Noisy Datapoints"]
+    else:
+        data = data_dict["Datapoints"]
     
     # multiple phi initializations are saved in the 3rd dim of phi_init
     num_permutations = phi_init.shape[2]
@@ -56,18 +63,26 @@ def coordinates_ascent(data, params):
             
     return elbo_final, tau, gamma, phi
 
-def _init(data, params):
+def _init(data_dict, params):
     # truncation parameter and number of data points
     T = params.T
     N = params.N
+    
+    # extract data from data_dict
+    if params.include_noise:
+        data = data_dict["Noisy Datapoints"]
+    else:
+        data = data_dict["Datapoints"]
+        
     # initialization
     # NOTE: T has to be higher than the true number of clusters
     if params.init_type.lower() == 'uniform':
         phi_init = 1/T * np.ones((N,T,1))
     elif params.init_type.lower() == 'true':
         phi_init = np.zeros((N,T,1))
-        T_true = params.true_assignment.shape[1]
-        phi_init[:,:T_true,0] = params.true_assignment
+        true_assignment = data_dict["True Cluster Assignments"]
+        T_true = true_assignment.shape[1]
+        phi_init[:,:T_true,0] = true_assignment
     elif params.init_type.lower() == 'permute':
         num_perm = params.num_permutations
         rand_indicators = [np.random.randint(0,T,N) for i in range(num_perm)]
