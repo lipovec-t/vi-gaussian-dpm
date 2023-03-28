@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import pickle
+from scipy.spatial import distance
 
 def full_postprocessing(data_dict, phi, gamma, tau, plot_results):
     """
@@ -63,15 +64,21 @@ def full_postprocessing(data_dict, phi, gamma, tau, plot_results):
     # Get reduced results
     results_reduced = reduce_results(results)
     
+    #TODO: only save reordered results
+    
+    # Reorder reduced results
+    results_reduced = reorder_results(results_reduced, data_dict)
+    
     # Plots
-    indicatorArray = results_reduced["Estimated Cluster Indicators"]
+    indicatorArray = results_reduced["Relabelled Estimated Cluster Indicators"]
+    meanIndicators = results_reduced["Mean Indicators"]
     if plot_results:
-        title = "Clustering DPM - MMSE Mean"
-        meanArray = results_reduced["Estimated Cluster Means"]
-        plot_clustering(data, title, indicatorArray, meanArray)
-        title = "Clustering DPM - Cluster Sample Mean"
-        meanArray = results_reduced["Sample Mean of Clusters" ]
-        plot_clustering(data, title, indicatorArray, meanArray)
+        title = "Clustering MFM - MMSE Mean"
+        meanArray = results_reduced["Reordered Estimated Cluster Means"]
+        plot_clustering(data, title, indicatorArray, meanArray, meanIndicators)
+        title = "Clustering MFM - Cluster Sample Mean"
+        meanArray = results_reduced["Reordered Sample Mean of Clusters" ]
+        plot_clustering(data, title, indicatorArray, meanArray, meanIndicators)
     
     
     return results, results_reduced
@@ -195,6 +202,62 @@ def reduce_results(results):
             results_reduced[key] = results[key][indicators_unique]
     return results_reduced
 
+def reorder_results(results_reduced, data_dict):
+    """
+    
+
+    Parameters
+    ----------
+    results_reduced : dict
+        Contains results for non-empty clusters
+    data_dict : dict
+        Contains ground truth.
+
+    Returns
+    -------
+    result_reduced with relabelled/reordered indicators/means according to data
+
+    """
+    N = len(results_reduced["Estimated Cluster Indicators"])
+    T_est = results_reduced["Estimated Number of Clusters"]
+    T = data_dict["True Number of Clusters"]
+    cluster_means = data_dict["True Cluster Means"]
+    cluster_means_est = results_reduced["Estimated Cluster Means"]
+    cluster_weights_est = results_reduced["Estimated Cluster Weights"]
+    sample_means_est = results_reduced["Sample Mean of Clusters"]
+    
+    # Compute distance between each pair of the two collections of inputs for estimated mean
+    metric = distance.cdist(cluster_means_est, cluster_means)
+    label_mapping = np.argmin(metric,axis=0)
+    label_mapping1 = np.argmin(metric,axis=1)
+    skip_array = np.isin(np.arange(0,label_mapping1.size),label_mapping)
+    labels_est = results_reduced["Estimated Cluster Indicators"]
+    relabelled_est_ind = np.zeros(N).astype(int)
+    if T_est >= T:          
+        label_mapping1[np.arange(T_est)[~skip_array]] = np.arange(T,T_est)
+    else:
+        T_add = T_est - np.unique(label_mapping1).size
+        label_mapping1[np.arange(T_est)[~skip_array]] = np.arange(T,T+T_add)
+        label_mapping = np.concatenate((label_mapping,np.arange(T_est)[~skip_array]))  
+    for j in range(T_est):
+        temp = np.where(labels_est == j)
+        relabelled_est_ind[temp] = label_mapping1[j]
+    results_reduced["Relabelled Estimated Cluster Indicators"] = relabelled_est_ind
+    # Reorder True Cluster Means
+    if T_est >= T: 
+        results_reduced["Reordered Estimated Cluster Means"] = np.concatenate((cluster_means_est[label_mapping], cluster_means_est[np.arange(T_est)[~skip_array]]),axis = 0)
+        results_reduced["Reordered Sample Mean of Clusters"] = np.concatenate((sample_means_est[label_mapping], sample_means_est[np.arange(T_est)[~skip_array]]),axis = 0)
+        results_reduced["Reordered Estimated Cluster Weights"] = np.concatenate((cluster_weights_est[label_mapping], cluster_weights_est[np.arange(T_est)[~skip_array]]),axis = 0)
+        results_reduced["Mean Indicators"] = np.arange(T_est)
+    else:        
+        results_reduced["Reordered Estimated Cluster Means"] = cluster_means_est[label_mapping][label_mapping1]
+        results_reduced["Reordered Sample Mean of Clusters"] = sample_means_est[label_mapping][label_mapping1]
+        results_reduced["Reordered Estimated Cluster Weights"] = cluster_weights_est[label_mapping][label_mapping1]
+        results_reduced["Mean Indicators"] = label_mapping1
+        #TODO: only save reordered cluster means (directly in PP) with corresponding indicators from ground truth
+        #TODO: also reorder according to sample means
+    return results_reduced
+
 def est_object_positions(y, results, params):
     """
     Computes the MMSE estimator of the objects position x given noisy y.
@@ -241,7 +304,7 @@ def mse(actual, predicted, normalizer):
     MSE = 1/normalizer * np.sum(np.linalg.norm(actual - predicted, axis=1)**2)
     return MSE
     
-def plot_clustering(data, title, indicatorArray, meanArray):
+def plot_clustering(data, title, indicatorArray, meanArray, meanIndicators):
     """
     Plot data with cluster indicators and cluster means.
 
@@ -269,7 +332,8 @@ def plot_clustering(data, title, indicatorArray, meanArray):
     colormap = plt.cm.get_cmap('tab20', 20)
     cx = meanArray[:,0]
     cy = meanArray[:,1]
-    plt.scatter(cx, cy, c=colormap(np.arange(T)), marker="o")
+    
+    plt.scatter(cx, cy, c=colormap(meanIndicators), marker="o")
     da, dy = data[:,0], data[:,1]
     plt.scatter(da, dy, c=colormap(indicatorArray), marker='.')
     

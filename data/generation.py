@@ -158,7 +158,7 @@ def generate_data_rp(N, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, plot,\
     
     if plot:
         plt.figure()
-        colormap = plt.cm.get_cmap('tab20', num_clusters)
+        colormap = plt.cm.get_cmap('tab20', 20)
         plt.title("Data")
         cx, cy = cluster_means[:,0], cluster_means[:,1]
         plt.scatter(cx, cy, c = colormap(range(num_clusters)), marker = "o")
@@ -239,7 +239,7 @@ def generate_data_gm(N, num_clusters, weights, cluster_means,\
 
     if plot:       
         plt.figure()
-        colormap = plt.cm.get_cmap('tab20', num_clusters)
+        colormap = plt.cm.get_cmap('tab20', 20)
         plt.title("Data")
         cx, cy = cluster_means[:,0], cluster_means[:,1]
         plt.scatter(cx, cy, c = colormap(range(num_clusters)), marker = "o")
