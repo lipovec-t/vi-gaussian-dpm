@@ -23,7 +23,7 @@ alpha = params.alpha
 
 # set object count and number of MC runs
 N_array = np.arange(1,51)
-MC_runs = 500
+MC_runs = 50
 
 # Store MSE for each simulation run
 MSE_x = np.zeros((N_array.size, MC_runs))
@@ -39,22 +39,23 @@ for i,N in enumerate(tqdm(N_array)):
     for j in range(MC_runs):
         # generate data
         params.N = N
-        indicator_array, cluster_assignments, cluster_means, x, data = \
-            generate_data(params)
+        data_dict = generate_data(params)
         
         # CAVI
-        elbo, tau, gamma, phi = coordinates_ascent(data, params)
+        elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
         if elbo > elbo_final[i]:
             elbo_final[i] = elbo
                
         # postprocessing
         results, results_reduced = \
-            pp.full_postprocessing(data, phi, gamma, tau, False)
+            pp.full_postprocessing(data_dict, phi, gamma, tau, False)
         
         # mmse estimator for x
-        x_est = pp.est_object_positions(data, results, params)
+        y = data_dict["Noisy Datapoints"]
+        x_est = pp.est_object_positions(y, results, params)
 
         # calculate mse
+        x = data_dict["Datapoints"]
         MSE_x[i,j] = pp.mse(x, x_est, K*N)
         
 # end timer and compute elapsed time

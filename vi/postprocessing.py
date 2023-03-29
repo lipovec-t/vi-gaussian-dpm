@@ -5,7 +5,7 @@ import pickle
 from scipy.spatial import distance
 from sklearn.metrics import accuracy_score as acc_score
 
-def full_postprocessing(data_dict, phi, gamma, tau, plot_results):
+def full_postprocessing(data_dict, phi, gamma, tau, relabel):
     """
     Performs full postprocessing given the simulation results
 
@@ -21,8 +21,8 @@ def full_postprocessing(data_dict, phi, gamma, tau, plot_results):
     tau : TYPE
         Tx(K+1) variational parameter tau describing the exp. fam. mixture 
         distribution.
-    plot_results : boolean
-        Determines if results shall be plotted.
+    relabel : boolean
+        Determines if results shall be relabelled.
 
     Returns
     -------
@@ -62,25 +62,13 @@ def full_postprocessing(data_dict, phi, gamma, tau, plot_results):
         "Sample Mean of Clusters"       : cluster_sample_mean,
         "Sample Weight of Clusters"     : cluster_sample_weight
         }
+    
     # Get reduced results
     results_reduced = reduce_results(results)
     
-    #TODO: only save reordered results
-    
     # Reorder reduced results
-    results_reduced = reorder_results(results_reduced, data_dict)
-    
-    # Plots
-    indicatorArray = results_reduced["Relabelled Estimated Cluster Indicators"]
-    meanIndicators = results_reduced["Mean Indicators"]
-    if plot_results:
-        title = "Clustering MFM - MMSE Mean"
-        meanArray = results_reduced["Reordered Estimated Cluster Means"]
-        plot_clustering(data, title, indicatorArray, meanArray, meanIndicators)
-        title = "Clustering MFM - Cluster Sample Mean"
-        meanArray = results_reduced["Reordered Sample Mean of Clusters" ]
-        plot_clustering(data, title, indicatorArray, meanArray, meanIndicators)
-    
+    if relabel == True:
+        results_reduced = reorder_results(results_reduced, data_dict)
     
     return results, results_reduced
 
@@ -382,7 +370,7 @@ def OSPA(x, y, indicators):
      
     return OSPA, dist 
    
-def plot_clustering(data, title, indicatorArray, meanArray, meanIndicators):
+def plot_clustering(data, title, indicatorArray, meanArray, **kwargs):
     """
     Plot data with cluster indicators and cluster means.
 
@@ -402,6 +390,11 @@ def plot_clustering(data, title, indicatorArray, meanArray, meanIndicators):
     None.
 
     """
+    if "meanIndicators" in kwargs.keys():
+        meanIndicators = kwargs["meanIndicators"]
+    else:
+        meanIndicators = np.unique(indicatorArray)
+        
     plt.figure()
     plt.title(title)
     T = meanArray.shape[0]
@@ -410,7 +403,6 @@ def plot_clustering(data, title, indicatorArray, meanArray, meanIndicators):
     colormap = plt.cm.get_cmap('tab20', 20)
     cx = meanArray[:,0]
     cy = meanArray[:,1]
-    
     plt.scatter(cx, cy, c=colormap(meanIndicators), marker="o")
     da, dy = data[:,0], data[:,1]
     plt.scatter(da, dy, c=colormap(indicatorArray), marker='.')

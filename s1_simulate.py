@@ -35,6 +35,18 @@ t_1 = timeit.default_timer()
 runtime = t_1 - t_0
 
 # postprocessing
-results, results_reduced = pp.full_postprocessing(data_dict, phi, gamma, tau, True)
+results, results_reduced =\
+    pp.full_postprocessing(data_dict, phi, gamma, tau, False)
+    
+# plots
+title = "Clustering DPM - MMSE Mean"
+indicatorArray = results_reduced["Estimated Cluster Indicators"]
+meanArray = results_reduced["Estimated Cluster Means"]
+pp.plot_clustering(data, title, indicatorArray, meanArray)
+
+title = "Clustering DPM - Cluster Sample Mean"
+indicatorArray = results_reduced["Estimated Cluster Indicators"]
+meanArray = results_reduced["Sample Mean of Clusters" ]
+pp.plot_clustering(data, title, indicatorArray, meanArray)
 
 
