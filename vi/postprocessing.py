@@ -193,7 +193,9 @@ def reduce_results(results):
 
 def reorder_results(results_reduced, data_dict):
     """
-    
+    Reorder results such that the estimated clusters have minimal distance to
+    the true cluster locations. The reordering is performed for both the MMSE
+    estimation results and the sample mean results.
 
     Parameters
     ----------
@@ -211,40 +213,100 @@ def reorder_results(results_reduced, data_dict):
     T_est = results_reduced["Estimated Number of Clusters"]
     T = data_dict["True Number of Clusters"]
     cluster_means = data_dict["True Cluster Means"]
-    cluster_means_est = results_reduced["Estimated Cluster Means"]
-    cluster_weights_est = results_reduced["Estimated Cluster Weights"]
-    sample_means_est = results_reduced["Sample Mean of Clusters"]
     
-    # Compute distance between each pair of the two collections of inputs for estimated mean
-    metric = distance.cdist(cluster_means_est, cluster_means)
-    label_mapping = np.argmin(metric,axis=0)
-    label_mapping1 = np.argmin(metric,axis=1)
-    skip_array = np.isin(np.arange(0,label_mapping1.size),label_mapping)
     labels_est = results_reduced["Estimated Cluster Indicators"]
-    relabelled_est_ind = np.zeros(N).astype(int)
-    if T_est >= T:          
-        label_mapping1[np.arange(T_est)[~skip_array]] = np.arange(T,T_est)
-    else:
-        T_add = T_est - np.unique(label_mapping1).size
-        label_mapping1[np.arange(T_est)[~skip_array]] = np.arange(T,T+T_add)
-        label_mapping = np.concatenate((label_mapping,np.arange(T_est)[~skip_array]))  
-    for j in range(T_est):
-        temp = np.where(labels_est == j)
-        relabelled_est_ind[temp] = label_mapping1[j]
-    results_reduced["Relabelled Estimated Cluster Indicators"] = relabelled_est_ind
-    # Reorder True Cluster Means
-    if T_est >= T: 
-        results_reduced["Reordered Estimated Cluster Means"] = np.concatenate((cluster_means_est[label_mapping], cluster_means_est[np.arange(T_est)[~skip_array]]),axis = 0)
-        results_reduced["Reordered Sample Mean of Clusters"] = np.concatenate((sample_means_est[label_mapping], sample_means_est[np.arange(T_est)[~skip_array]]),axis = 0)
-        results_reduced["Reordered Estimated Cluster Weights"] = np.concatenate((cluster_weights_est[label_mapping], cluster_weights_est[np.arange(T_est)[~skip_array]]),axis = 0)
-        results_reduced["Mean Indicators"] = np.arange(T_est)
-    else:        
-        results_reduced["Reordered Estimated Cluster Means"] = cluster_means_est[label_mapping][label_mapping1]
-        results_reduced["Reordered Sample Mean of Clusters"] = sample_means_est[label_mapping][label_mapping1]
-        results_reduced["Reordered Estimated Cluster Weights"] = cluster_weights_est[label_mapping][label_mapping1]
-        results_reduced["Mean Indicators"] = label_mapping1
-        #TODO: only save reordered cluster means (directly in PP) with corresponding indicators from ground truth
-        #TODO: also reorder according to sample means
+    
+    # MMSE estimation results
+    mmse_means = results_reduced["Estimated Cluster Means"]
+    mmse_weights = results_reduced["Estimated Cluster Weights"]
+    
+    # Sample mean estimation results
+    sample_means = results_reduced["Sample Mean of Clusters"]
+    sample_weights = results_reduced["Sample Weight of Clusters"]
+    
+    # Compute distances between each pair of estimated and true cluster mean
+    metric_mmse   = distance.cdist(mmse_means, cluster_means)
+    metric_sample = distance.cdist(sample_means, cluster_means)
+    
+    # Relabel/Reorder the clusters for both the mmse and sample estimator case
+    for i, metric in enumerate([metric_mmse, metric_sample]):
+        label_mapping = np.argmin(metric, axis=1)
+        
+        # False in skip array means that it is an additional cluster
+        skip_array = np.full((T_est,), True)
+        indices, counts = np.unique(label_mapping, return_counts=True)
+        duplicates = np.where(counts>1)[0]
+        for j in duplicates:
+            duplicates_indices = np.asarray(label_mapping==indices[j]).nonzero()[0]
+            skip_array[duplicates_indices] = False
+            duplicates_metrics = metric[duplicates_indices,indices[j]]
+            duplicate_min_index = duplicates_indices[np.argmin(duplicates_metrics)]
+            skip_array[duplicate_min_index] = True
+        
+        # indices in label_mapping of additional clusters
+        add_cluster = np.arange(T_est)[~skip_array]
+        T_add = add_cluster.size
+    
+        relabelled_est_ind = np.zeros(N).astype(int)
+        if T_est >= T:          
+            label_mapping[add_cluster] = np.arange(T, T+T_add)
+        elif T_est < T:
+            label_mapping[add_cluster] = np.arange(T, T+T_add)
+            
+        for j in range(T_est):
+            temp = np.where(labels_est == j)
+            relabelled_est_ind[temp] = label_mapping[j]
+            
+        if i == 0:   # MMSE CASE
+            results_reduced["MMSE Estimated Cluster Indicators"] =\
+                relabelled_est_ind
+            
+            
+            if T_est > T:
+                #sort means and weights according to label_mapping
+                means_temp = np.zeros_like(mmse_means)
+                weights_temp = np.zeros_like(mmse_weights)
+                for k in range(T_est):
+                    means_temp[label_mapping[k]] = mmse_means[k]
+                    weights_temp[label_mapping[k]] = mmse_weights[k]
+                    
+                results_reduced["MMSE Estimated Cluster Means"] = means_temp   
+                results_reduced["MMSE Estimated Cluster Weights"] = weights_temp       
+                results_reduced["MMSE Mean Indicators"] = np.arange(T_est)
+                
+            else:
+                # do not sort, save association in mean indicators
+                results_reduced["MMSE Estimated Cluster Means"] = mmse_means
+                results_reduced["MMSE Estimated Cluster Weights"] = mmse_weights
+                results_reduced["MMSE Mean Indicators"] = label_mapping
+            
+        elif i == 1: # SAMPLE CASE
+            results_reduced["Sample Estimated Cluster Indicators"] =\
+                relabelled_est_ind
+                
+            if T_est > T:
+                #sort means and weights according to label_mapping
+                means_temp = np.zeros_like(sample_means)
+                weights_temp = np.zeros_like(sample_weights)
+                for k in range(T_est):
+                    means_temp[label_mapping[k]] = sample_means[k]
+                    weights_temp[label_mapping[k]] = sample_weights[k]                
+                results_reduced["Sample Mean of Clusters"] = means_temp
+                results_reduced["Sample Estimated Cluster Weights"] = weights_temp 
+                results_reduced["Sample Mean Indicators"] = np.arange(T_est)
+                
+            else:
+                # do not sort, save association in mean indicators
+                results_reduced["Sample Mean of Clusters"] = sample_means 
+                results_reduced["Sample Estimated Cluster Weights"] = sample_weights
+                results_reduced["Sample Mean Indicators"] = label_mapping
+    
+    # delete unnecessary dictionary entries
+    del results_reduced["Estimated Cluster Indicators"]
+    del results_reduced["Estimated Cluster Means"]
+    del results_reduced["Estimated Cluster Weights"]
+    del results_reduced["Sample Weight of Clusters"]
+        
     return results_reduced
 
 def est_object_positions(y, results, params):
@@ -338,25 +400,25 @@ def OSPA(x, y, indicators):
     y_len = y.shape[0]
     
     # cut-off distance
-    c = 1
+    c = 50
     
     # order of the ospa metric
     p = 2
     
-    # save association between objects in x_temp and y_temp
-    if x_len <= y_len:
+    if x_len < y_len:
         m, n = x_len, y_len
-        indicators = indicators[:x_len]
-        y_temp = y[indicators]
     else:
         m, n = y_len, x_len
-        y_temp = y
-    x_temp = x[indicators]
+        
+    # save association between objects in x_temp and y_temp
+    temp = np.isin(indicators, np.arange(x_len))
+    x_temp = x[indicators[temp]]
+    y_temp = y[temp]
     
     # distances between given objects
     distanceMatrix = distance.cdist(x_temp, y_temp)
     # normalized error squared
-    distanceVector = 1/m * np.diag(distanceMatrix)**p
+    distanceVector = np.diag(distanceMatrix)
     # cut-off based distance
     d_c = np.minimum(distanceVector, c)
     # localization error component
@@ -366,9 +428,11 @@ def OSPA(x, y, indicators):
     # traditional OSPA metric
     OSPA = (d_loc + d_card)**(1/p)
     # average eucledian distances between objects
-    dist = np.mean(np.diag(distanceMatrix))
+    dist = np.mean(distanceVector)
+    # RMSE
+    rmse = np.sqrt(d_loc)
      
-    return OSPA, dist 
+    return OSPA, dist, rmse
    
 def plot_clustering(data, title, indicatorArray, meanArray, **kwargs):
     """
