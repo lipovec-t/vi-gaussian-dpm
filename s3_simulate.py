@@ -14,7 +14,7 @@ np.random.seed(255)
 # load parameters
 params = Params()
 # number of MC runs
-MC_runs = 1
+MC_runs = 100
 
 # save results?
 save_results = False

@@ -15,14 +15,6 @@ def eta_and_logparteta(tau, sigma, sigma_inv):
     # elements of sigma are zero
     T = tau.shape[0]
     K = tau.shape[1] - 1
-    # expec_eta1 = np.empty((T,K))
-    # expec_logparteta1 = np.empty(T)
-    # for t in range(T):
-    #     expec_eta1[t,:] = np.matmul(sigma_inv,tau[t,:-1]) / tau[t,-1]
-    #     sigma_tau = sigma_inv / tau[t,-1]
-    #     temp = sigma_tau + np.diag(expec_eta1[t,:]**2)
-    #     expec_logparteta1[t] = np.trace(np.multiply(temp, sigma)) * 0.5
-    # without loop
     expec_eta = np.einsum('ij,kj->ki',sigma_inv,tau[:,:-1]) / tau[:,-1,np.newaxis]
     tau_temp = np.ones((K,K,T)) * tau[:,-1]
     sigma_tau = np.repeat(sigma_inv[:, :, np.newaxis], T, axis=2) / tau_temp

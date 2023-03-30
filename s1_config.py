@@ -20,7 +20,8 @@ class Params:
     beta_MFM  = 1
     # GM
     weights_GM       = np.ones(4) / 4
-    cluster_means_GM = np.array([]) # if empty mu_G and sigma_G is used to generate means
+    cluster_means_GM = np.array([])
+    # if empty mu_G and sigma_G is used to generate means
     if cluster_means_GM.size != 0:
         num_clusters_GM = cluster_means_GM.shape[0]
     else:
