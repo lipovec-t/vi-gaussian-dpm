@@ -8,8 +8,13 @@ filename = 'file.pkl'
 sim_data = pp.load_results(filename)
 
 # plot results of one of the MC runs
-MC_run_index = 0
+MC_run_index = 1
 data = sim_data[MC_run_index]["Datapoints"]
+
+title = "Data"
+indicatorArray = sim_data[MC_run_index]["True Cluster Indicators"]
+meanArray = sim_data[MC_run_index]["True Cluster Means"]
+pp.plot_clustering(data, title, indicatorArray, meanArray)
 
 title = "Clustering DPM - MMSE Mean"
 indicatorArray = sim_data[MC_run_index]["MMSE Estimated Cluster Indicators"]
@@ -28,6 +33,7 @@ pp.plot_clustering(data, title,\
 # produce desired metrics with simulation results
 MC_runs = len(sim_data)
 est_cluster_number = np.zeros(MC_runs)
+true_cluster_number = np.zeros(MC_runs)
 counter = 0
 cluster_mean_distances = np.zeros(MC_runs)
 accuracy_score = np.zeros(MC_runs)
@@ -38,6 +44,7 @@ rmse = np.zeros(MC_runs)
 
 for i in range(MC_runs):
     est_cluster_number[i] = sim_data[i]["Estimated Number of Clusters"]
+    true_cluster_number[i] = sim_data[i]["True Number of Clusters"]
     true_cluster_means = sim_data[i]["True Cluster Means"]
     est_cluster_means = sim_data[i]["MMSE Estimated Cluster Means"]
     true_indicators = sim_data[i]["True Cluster Indicators"]
@@ -51,12 +58,11 @@ for i in range(MC_runs):
                                                  mean_indicators, c, p)
     
 mean_cluster_number = np.mean(est_cluster_number)
-accuracy_clusters = np.mean(est_cluster_number == 8) * 100
+accuracy_clusters = np.mean(est_cluster_number == true_cluster_number) * 100
 accuracy_means = np.mean(cluster_mean_distances)
 mean_accuracy_score = np.mean(accuracy_score)
 mean_OSPA = np.mean(OSPA)
 mean_RMSE = np.mean(rmse)
-
 
 print("\n")
 print("DPM SIMULATION")

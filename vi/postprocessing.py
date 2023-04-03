@@ -260,46 +260,18 @@ def reorder_results(results_reduced, data_dict):
         if i == 0:   # MMSE CASE
             results_reduced["MMSE Estimated Cluster Indicators"] =\
                 relabelled_est_ind
-            
-            
-            if T_est > T:
-                #sort means and weights according to label_mapping
-                means_temp = np.zeros_like(mmse_means)
-                weights_temp = np.zeros_like(mmse_weights)
-                for k in range(T_est):
-                    means_temp[label_mapping[k]] = mmse_means[k]
-                    weights_temp[label_mapping[k]] = mmse_weights[k]
-                    
-                results_reduced["MMSE Estimated Cluster Means"] = means_temp   
-                results_reduced["MMSE Estimated Cluster Weights"] = weights_temp       
-                results_reduced["MMSE Mean Indicators"] = np.arange(T_est)
-                
-            else:
-                # do not sort, save association in mean indicators
-                results_reduced["MMSE Estimated Cluster Means"] = mmse_means
-                results_reduced["MMSE Estimated Cluster Weights"] = mmse_weights
-                results_reduced["MMSE Mean Indicators"] = label_mapping
+            # save association in mean indicators
+            results_reduced["MMSE Estimated Cluster Means"] = mmse_means
+            results_reduced["MMSE Estimated Cluster Weights"] = mmse_weights
+            results_reduced["MMSE Mean Indicators"] = label_mapping
             
         elif i == 1: # SAMPLE CASE
             results_reduced["Sample Estimated Cluster Indicators"] =\
                 relabelled_est_ind
-                
-            if T_est > T:
-                #sort means and weights according to label_mapping
-                means_temp = np.zeros_like(sample_means)
-                weights_temp = np.zeros_like(sample_weights)
-                for k in range(T_est):
-                    means_temp[label_mapping[k]] = sample_means[k]
-                    weights_temp[label_mapping[k]] = sample_weights[k]                
-                results_reduced["Sample Mean of Clusters"] = means_temp
-                results_reduced["Sample Estimated Cluster Weights"] = weights_temp 
-                results_reduced["Sample Mean Indicators"] = np.arange(T_est)
-                
-            else:
-                # do not sort, save association in mean indicators
-                results_reduced["Sample Mean of Clusters"] = sample_means 
-                results_reduced["Sample Estimated Cluster Weights"] = sample_weights
-                results_reduced["Sample Mean Indicators"] = label_mapping
+            # save association in mean indicators
+            results_reduced["Sample Mean of Clusters"] = sample_means 
+            results_reduced["Sample Estimated Cluster Weights"] = sample_weights
+            results_reduced["Sample Mean Indicators"] = label_mapping
     
     # delete unnecessary dictionary entries
     del results_reduced["Estimated Cluster Indicators"]
