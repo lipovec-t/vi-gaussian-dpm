@@ -375,7 +375,7 @@ def accuracy_score(ground_truth, predicted):
     """
     return acc_score(ground_truth, predicted)
 
-def OSPA(x, y, indicators):
+def OSPA(x, y, indicators, c, p):
     """
     Computes the traditional OSPA metric according to:
     https://de.mathworks.com/help/fusion/ref/trackospametric-system-object.html
@@ -388,6 +388,10 @@ def OSPA(x, y, indicators):
         Estimated positions.
     indicators : ndarray of shape (M,)
         Association of y to x.
+    c : float
+        cut-off distance
+    p : int
+        order of the OSPA metric
 
     Returns
     -------
@@ -398,12 +402,6 @@ def OSPA(x, y, indicators):
     # number of objects
     x_len = x.shape[0]
     y_len = y.shape[0]
-    
-    # cut-off distance
-    c = 50
-    
-    # order of the ospa metric
-    p = 2
     
     if x_len < y_len:
         m, n = x_len, y_len
