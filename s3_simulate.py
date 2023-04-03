@@ -60,7 +60,6 @@ pp.plot_clustering(data, title,\
 # produce desired metrics with simulation results
 est_cluster_number = np.zeros(MC_runs)
 true_cluster_number = np.zeros(MC_runs)
-counter = 0
 cluster_mean_distances = np.zeros(MC_runs)
 accuracy_score = np.zeros(MC_runs)
 c = 0.3 # cut-off distance
