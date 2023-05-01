@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.stats import multinomial, poisson
 from scipy.special import loggamma
 
@@ -147,3 +148,25 @@ def logsumexp(a,b):
     else:
         return m + np.log(np.exp(a-m)+np.exp(b-m))
 
+if __name__ == "__main__":
+    # example for chinese restaurant process
+    N = 200
+    alpha = 10
+    sample_indices = np.arange(1, N+1)
+    
+    # create cluster indicators according to chinese restaurant process
+    indicator_array = rp_dpm(N, alpha)+1
+    
+    # indices of new restaurant tables
+    _, indices = np.unique(indicator_array, return_index=True)
+
+    # plot indicators and average number of tables
+    plt.figure(figsize=(3.2,3))
+    plt.scatter(sample_indices, indicator_array,\
+                marker='.', color='k', sizes = 5*np.ones(N))
+    plt.scatter(indices+1, indicator_array[indices],\
+                marker='.', color='r', sizes = 12*np.ones(N))
+    plt.plot(sample_indices, alpha*np.log(1+sample_indices/alpha))
+    plt.xlabel(r'$n$')
+    plt.ylabel(r'$z_n$')
+    plt.tight_layout()
