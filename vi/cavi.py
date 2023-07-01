@@ -7,7 +7,7 @@ from sklearn.preprocessing import StandardScaler
 
 # Local application imports
 from . import expectations as expec
-from vi.elbo import compute_elbo
+from vi.elbo import compute_elbo, compute_predictive
 
 # Dimensions
 # K -> dimension of data points x_n
@@ -29,13 +29,16 @@ def coordinates_ascent(data_dict, params):
     # extract data from data_dict
     if params.include_noise:
         data = data_dict["Noisy Datapoints"]
+        data_pred = data_dict["Noisy Datapoints Held Out"]
     else:
         data = data_dict["Datapoints"]
+        data_pred = data_dict["Datapoints Held Out"]
     
     # multiple phi initializations are saved in the 3rd dim of phi_init
     num_permutations = phi_init.shape[2]
     elbo = np.zeros(max_iterations)
-    elbo_final = -np.inf
+    predictive = np.zeros(max_iterations)
+    elbo_final_temp = -np.inf
     
     for j in range(num_permutations):
         phi_temp = phi_init[:,:,j]          
@@ -49,30 +52,36 @@ def coordinates_ascent(data_dict, params):
             gamma_temp = update_gamma(phi_temp, alpha)
             tau_temp = update_tau(data, lamda, phi_temp)
             
+            # compute predictive for held out data set
+            # predictive[i] = compute_predictive(data_pred, gamma_temp, tau_temp, sigma)
+            
             # compute elbo and check convergence
             elbo[i] = compute_elbo(alpha, lamda, data, gamma_temp, phi_temp, \
-                                   tau_temp, sigma, mu_G, sigma_G, sigma_inv)
-            if i>0 and np.abs(elbo[i]-elbo[i-1])/np.abs(elbo[i-1]) * 100 < 1e-2:
-                break
+                                    tau_temp, sigma, mu_G, sigma_G, sigma_inv)
+            # if i>0 and np.abs(elbo[i]-elbo[i-1])/np.abs(elbo[i-1]) * 100 < 1e-4:
+            #     break
             
-        if elbo[i] > elbo_final:
-            elbo_final = elbo[i]
+            
+        if elbo[i] > elbo_final_temp:
+            elbo_final_temp = elbo[i]
+            elbo_final = elbo
             tau = tau_temp
             gamma = gamma_temp
             phi = phi_temp
             
-    return elbo_final, tau, gamma, phi
+    return elbo_final, tau, gamma, phi, predictive
 
 def _init(data_dict, params):
     # truncation parameter and number of data points
     T = params.T
-    N = params.N
     
     # extract data from data_dict
     if params.include_noise:
         data = data_dict["Noisy Datapoints"]
     else:
         data = data_dict["Datapoints"]
+        
+    N = data.shape[0]
         
     # initialization
     # NOTE: T has to be higher than the true number of clusters

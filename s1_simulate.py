@@ -27,7 +27,7 @@ else:
 t_0 = timeit.default_timer()
 
 # CAVI
-elbo_final, tau, gamma, phi = coordinates_ascent(data_dict, params)
+elbo_final, tau, gamma, phi, predictive = coordinates_ascent(data_dict, params)
 # end timer
 
 # end timer and compute elapsed time
@@ -48,5 +48,7 @@ title = "Clustering DPM - Cluster Sample Mean"
 indicatorArray = results_reduced["Estimated Cluster Indicators"]
 meanArray = results_reduced["Sample Mean of Clusters" ]
 pp.plot_clustering(data, title, indicatorArray, meanArray)
+
+
 
 

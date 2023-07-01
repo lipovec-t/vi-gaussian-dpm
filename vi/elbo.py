@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.special import loggamma
+from scipy.stats import multivariate_normal
 from . import expectations as expec
+from . import postprocessing as pp
 
 
 # ELBO calculation
@@ -71,3 +73,31 @@ def compute_elbo(alpha, lamda, data, gamma, phi, tau, sigma, mu_G, sigma_G, sigm
     return elbo
     
     
+def compute_predictive(data, gamma, tau, sigma):
+    """
+    Compute value of the  predictive distribution for some given data.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
+    N_held = data.shape[0]
+    T = gamma.shape[0]
+    
+    # compute estimate of the cluster weights
+    pi_est = pp.est_cluster_weights_mmse(gamma)
+    
+    # compute estimate of the cluster means
+    means_est = pp.est_cluster_means_mmse(tau)
+    
+    # compute predictive dist
+    temp = np.zeros((N_held,T))
+    for t in range(T):
+        temp[:,t] = pi_est[t] * multivariate_normal.pdf(data, means_est[t,:], sigma)
+    
+    predictive = np.prod(np.sum(temp, axis=1))
+            
+    return predictive

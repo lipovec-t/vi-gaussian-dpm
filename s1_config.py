@@ -11,7 +11,7 @@ class Params:
     # MFM   - Gaussian Mixture of finite Mixtures
     # GM    - Gaussian Mixture with fixed number of clusters
     # load  - Load data set from file
-    data_type = "DPM"
+    data_type = "GM"
     # model specific parameters
     # DPM
     alpha_DPM = 1
@@ -19,8 +19,9 @@ class Params:
     alpha_MFM = 5
     beta_MFM  = 1
     # GM
-    weights_GM       = np.ones(4) / 4
-    cluster_means_GM = np.array([])
+    weights_GM       = np.ones(8) / 8
+    cluster_means_GM = np.array([[-6,-2.5],[-6,2.5],[6,2.5],[6,-2.5],\
+                              [-2,-2.5],[-2,2.5],[2,2.5],[2,-2.5]])
     # if empty mu_G and sigma_G is used to generate means
     if cluster_means_GM.size != 0:
         num_clusters_GM = cluster_means_GM.shape[0]
@@ -43,7 +44,7 @@ class Params:
     sigma_V = np.eye(K)
     include_noise = False
     # number of data points
-    N = 50
+    N = 100
     # plot data if true
     plot_data = True
     
