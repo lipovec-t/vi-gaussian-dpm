@@ -53,15 +53,14 @@ def coordinates_ascent(data_dict, params):
             tau_temp = update_tau(data, lamda, phi_temp)
             
             # compute predictive for held out data set
-            # predictive[i] = compute_predictive(data_pred, gamma_temp, tau_temp, sigma)
+            predictive[i] = compute_predictive(data_pred, gamma_temp, tau_temp, sigma)
             
             # compute elbo and check convergence
             elbo[i] = compute_elbo(alpha, lamda, data, gamma_temp, phi_temp, \
                                     tau_temp, sigma, mu_G, sigma_G, sigma_inv)
             # if i>0 and np.abs(elbo[i]-elbo[i-1])/np.abs(elbo[i-1]) * 100 < 1e-4:
             #     break
-            
-            
+             
         if elbo[i] > elbo_final_temp:
             elbo_final_temp = elbo[i]
             elbo_final = elbo

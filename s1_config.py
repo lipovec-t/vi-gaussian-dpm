@@ -44,7 +44,7 @@ class Params:
     sigma_V = np.eye(K)
     include_noise = False
     # number of data points
-    N = 100
+    N = 400
     # plot data if true
     plot_data = True
     

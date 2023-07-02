@@ -84,7 +84,6 @@ def compute_predictive(data, gamma, tau, sigma):
     -------
 
     """
-    N_held = data.shape[0]
     T = gamma.shape[0]
     
     # compute estimate of the cluster weights
@@ -93,11 +92,49 @@ def compute_predictive(data, gamma, tau, sigma):
     # compute estimate of the cluster means
     means_est = pp.est_cluster_means_mmse(tau)
     
-    # compute predictive dist
-    temp = np.zeros((N_held,T))
-    for t in range(T):
-        temp[:,t] = pi_est[t] * multivariate_normal.pdf(data, means_est[t,:], sigma)
-    
-    predictive = np.prod(np.sum(temp, axis=1))
-            
+    # compute predictive pdf
+    covs = np.repeat(sigma[np.newaxis, :, :], T, axis=0)
+    # here temp has shape (N, T)
+    temp = np.exp(multiple_logpdfs(data, means_est, covs))
+    temp = temp * pi_est[:,np.newaxis]
+    predictive = np.prod(np.sum(temp, axis=0))
+         
     return predictive
+
+def multiple_logpdfs(xs, means, covs):
+    """ 
+    Vecotrize computation of multivariate normal pdf.
+    Source: https://gregorygundersen.com/blog/2020/12/12/group-multivariate-normal-pdf/
+    Assuming:
+        - T parameters
+        - K is the dimension of a single sample
+        - N is the number of samples
+        - `xs` has shape (N, K).
+        - `means` has shape (T, K).
+        - `covs` has shape (T, K, K).
+    """
+    # NumPy broadcasts `eigh`.
+    vals, vecs = np.linalg.eigh(covs)
+
+    # Compute the log determinants across the second axis.
+    logdets = np.sum(np.log(vals), axis=1)
+
+    # Invert the eigenvalues.
+    valsinvs = 1./vals
+    
+    # Add a dimension to `valsinvs` so that NumPy broadcasts appropriately.
+    Us   = vecs * np.sqrt(valsinvs)[:, None]
+    devs = xs[:, None, :] - means[None, :, :]
+
+    # Use `einsum` for matrix-vector multiplications across the first dimension.
+    devUs = np.einsum('jnk,nki->jni', devs, Us)
+
+    # Compute the Mahalanobis distance by squaring each term and summing.
+    mahas = np.sum(np.square(devUs), axis=2)
+    
+    # Compute and broadcast scalar normalizers.
+    dim    = xs.shape[1]
+    log2pi = np.log(2 * np.pi)
+
+    out = -0.5 * (dim * log2pi + mahas + logdets[None, :])
+    return out.T
