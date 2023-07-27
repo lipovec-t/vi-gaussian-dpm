@@ -12,7 +12,7 @@ from s3_config import Params
 np.random.seed(255)
 
 # Set number of datapoints and MC runs
-N_array = np.arange(100,3050,50)
+N_array = np.arange(50,3050,50)
 MC_runs = 500
 
 # Store metrics for each simulation run 
@@ -22,6 +22,16 @@ accuracy_score = np.zeros((N_array.size,MC_runs))
 OSPA = np.zeros((N_array.size,MC_runs))
 rmse = np.zeros((N_array.size,MC_runs))
 true_cluster_number = np.zeros(MC_runs)
+
+# Function for displaying progress of N-loop and MC-run loop
+def myprogress(curr, N, width=8, bars = u'▉▊▋▌▍▎▏ '[::-1],full='█', empty=' '): 
+    p = curr / N 
+    nfull = int(p * width)
+    return "{:>3.0%} |{}{}{}| {:>2}/{}"\
+        .format(p, full * nfull,
+                bars[int(len(bars) * ((p * width) % 1))],
+                empty * (width - nfull - 1),
+                curr, N)
 
 # Parameters for OSPA
 c = 1
@@ -39,10 +49,14 @@ for j in range(N_array.size):
 params = Params()
 
 # save results?
-save_results = False
+save_results = True
 
-for j,N in enumerate(tqdm(N_array)):  
+pbar = tqdm(N_array,
+                 bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}')
+
+for j,N in enumerate(pbar):  
     for i in range(MC_runs):
+        pbar.set_postfix_str(myprogress(i, MC_runs))
         params.N = N
         # generate data
         data_dict = generate_data(params)
