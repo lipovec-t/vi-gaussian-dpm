@@ -3,15 +3,16 @@ import timeit
 
 # Third party imports
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Local application imports
 from data.generation import generate_data
 from vi.cavi import coordinates_ascent
 from vi import postprocessing as pp
-from s1_config import Params
+from s3_config import Params
 
 # random seed for testing purposes
-np.random.seed(255)
+np.random.seed(234)
 
 # load parameters
 params = Params()
@@ -27,7 +28,8 @@ else:
 t_0 = timeit.default_timer()
 
 # CAVI
-elbo_final, tau, gamma, phi, predictive = coordinates_ascent(data_dict, params)
+elbo_final, elbo_converged_it, predictive, predictive_converged_it,\
+    tau, gamma, phi = coordinates_ascent(data_dict, params)
 # end timer
 
 # end timer and compute elapsed time
@@ -49,6 +51,26 @@ indicatorArray = results_reduced["Estimated Cluster Indicators"]
 meanArray = results_reduced["Sample Mean of Clusters" ]
 pp.plot_clustering(data, title, indicatorArray, meanArray)
 
+plt.figure()
+# plt.title("Clustering DPM - ELBO")
+plt.xlabel("Iteration")
+plt.ylabel("ELBO")
+plt.xlim(1,50)
+plt.grid()
+plt.plot(elbo_final)
+plt.axvline(x=elbo_converged_it[0], color='black', linestyle='--')
+plt.axvline(x=elbo_converged_it[1], color='black', linestyle='--')
+plt.axvline(x=elbo_converged_it[2], color='black', linestyle='--')
+plt.tight_layout()
 
-
-
+plt.figure()
+# plt.title("Clustering DPM - Predictive")
+plt.xlabel("Iteration")
+plt.ylabel("Average log predictive")
+plt.xlim(1,50)
+plt.grid()
+plt.plot(predictive)
+plt.axvline(x=predictive_converged_it[0], color='black', linestyle='--')
+plt.axvline(x=predictive_converged_it[1], color='black', linestyle='--')
+plt.axvline(x=predictive_converged_it[2], color='black', linestyle='--')
+plt.tight_layout()

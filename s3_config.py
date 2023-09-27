@@ -43,7 +43,7 @@ class Params:
     sigma_V = np.eye(K)
     include_noise = False
     # number of data points
-    N = 400
+    N = 1000
     # plot data if true
     plot_data =False
     
@@ -69,6 +69,6 @@ class Params:
     # DBSCAN    - Use hard assignments of dbscan
     init_type = 'permute'
     # true_assignment should be added during runtime
-    num_permutations = 10 # only for random permuated initialization
+    num_permutations = 1 # only for random permuated initialization
     max_iterations = 100
     T = 20 # truncation

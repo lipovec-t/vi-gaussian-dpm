@@ -92,12 +92,14 @@ def compute_predictive(data, gamma, tau, sigma):
     # compute estimate of the cluster means
     means_est = pp.est_cluster_means_mmse(tau)
     
-    # compute predictive pdf
+    # compute predictive pdf for all data points
     covs = np.repeat(sigma[np.newaxis, :, :], T, axis=0)
     # here temp has shape (N, T)
     temp = np.exp(multiple_logpdfs(data, means_est, covs))
     temp = temp * pi_est[:,np.newaxis]
-    predictive = np.prod(np.sum(temp, axis=0))
+    temp = np.sum(temp, axis=0)
+    # compute average log predictive
+    predictive = np.mean(np.log(temp))
          
     return predictive
 

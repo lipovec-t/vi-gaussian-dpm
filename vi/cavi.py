@@ -44,6 +44,19 @@ def coordinates_ascent(data_dict, params):
         phi_temp = phi_init[:,:,j]          
         gamma_temp = update_gamma(phi_temp,alpha)
         tau_temp = update_tau(data, lamda, phi_temp)
+        elbo_is_converged = [False] * 3
+        predictive_is_converged = [False] * 3
+        elbo_converged_it = [max_iterations] * 3
+        predictive_converged_it = [max_iterations] * 3
+        
+        # TEST
+        for t in range(params.T):
+            tau_temp[t,:-1] = lamda[:-1]
+            tau_temp[t,-1] = lamda[-1]
+            gamma_temp[t,0] = 1
+            gamma_temp[t,1] = alpha
+            gamma_temp[-1,:] = np.array([1, 0.001])
+        
         
         for i in range(max_iterations):
             # compute variational updates
@@ -55,20 +68,44 @@ def coordinates_ascent(data_dict, params):
             # compute predictive for held out data set
             predictive[i] = compute_predictive(data_pred, gamma_temp, tau_temp, sigma)
             
-            # compute elbo and check convergence
+            # compute elbo 
             elbo[i] = compute_elbo(alpha, lamda, data, gamma_temp, phi_temp, \
                                     tau_temp, sigma, mu_G, sigma_G, sigma_inv)
-            # if i>0 and np.abs(elbo[i]-elbo[i-1])/np.abs(elbo[i-1]) * 100 < 1e-4:
-            #     break
+            
+            # check convergence of elbo
+            if i>5 and np.abs(elbo[i]-elbo[i-1])/np.abs(elbo[i-1]) * 100 < 1e-2 and not elbo_is_converged[0]:
+                elbo_converged_it[0] = i
+                elbo_is_converged[0] = True
+            if i>5 and np.abs(elbo[i]-elbo[i-1])/np.abs(elbo[i-1]) * 100 < 1e-3 and not elbo_is_converged[1]:
+                elbo_converged_it[1] = i
+                elbo_is_converged[1] = True
+            if i>5 and np.abs(elbo[i]-elbo[i-1])/np.abs(elbo[i-1]) * 100 < 1e-4 and not elbo_is_converged[2]:
+                elbo_converged_it[2] = i
+                elbo_is_converged[2] = True
+                
+            
+            # check convergence of predictive dist
+            if i>0 and np.abs(predictive[i]-predictive[i-1])/np.abs(predictive[i-1]) * 100 < 1e-2 and not predictive_is_converged[0]:
+                predictive_converged_it[0] = i
+                predictive_is_converged[0] = True
+            if i>0 and np.abs(predictive[i]-predictive[i-1])/np.abs(predictive[i-1]) * 100 < 1e-3 and not predictive_is_converged[1]:
+                predictive_converged_it[1] = i
+                predictive_is_converged[1] = True
+            if i>0 and np.abs(predictive[i]-predictive[i-1])/np.abs(predictive[i-1]) * 100 < 1e-4 and not predictive_is_converged[2]:
+                predictive_converged_it[2] = i
+                predictive_is_converged[2] = True
              
         if elbo[i] > elbo_final_temp:
+            # save highest observed elbo value
             elbo_final_temp = elbo[i]
+            # save elbo vector containting the highest observed elbo value
             elbo_final = elbo
+            # save variational parameters corresponding to the highest elbo value
             tau = tau_temp
             gamma = gamma_temp
             phi = phi_temp
             
-    return elbo_final, tau, gamma, phi, predictive
+    return elbo_final, elbo_converged_it, predictive, predictive_converged_it, tau, gamma, phi
 
 def _init(data_dict, params):
     # truncation parameter and number of data points
