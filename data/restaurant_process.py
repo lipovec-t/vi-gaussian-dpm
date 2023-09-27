@@ -1,5 +1,8 @@
+# Third party imports
 import numpy as np
 import matplotlib.pyplot as plt
+
+# Local application imports
 from scipy.stats import multinomial, poisson
 from scipy.special import loggamma
 
@@ -149,6 +152,8 @@ def logsumexp(a,b):
         return m + np.log(np.exp(a-m)+np.exp(b-m))
 
 if __name__ == "__main__":
+    # random seed for testing purposes
+    np.random.seed(3274)
     # example for chinese restaurant process
     N = 200
     alpha = 10

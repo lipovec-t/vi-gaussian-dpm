@@ -1,7 +1,13 @@
+# Third party imports
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import multivariate_normal, multinomial
-from . import restaurant_process
+
+# Local application imports
+if __name__ == "__main__":
+    from restaurant_process import rp_dpm
+else:
+    from .restaurant_process import rp_dpm, rp_mfm
 
 def generate_data(params):
     """
@@ -43,8 +49,7 @@ def generate_data(params):
         alpha_DPM = params.alpha_DPM
         indicator_array, cluster_assignments, cluster_means, x, y = \
             generate_data_rp(N, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,\
-                             plot_data,\
-                             restaurant_process.rp_dpm, alpha_DPM)
+                             plot_data, rp_dpm, alpha_DPM)
                 
     elif data_type.lower() == "mfm":
         # kind of concentration parameter - higher alpha more clusters
@@ -52,8 +57,7 @@ def generate_data(params):
         beta_MFM  = params.beta_MFM
         indicator_array, cluster_assignments, cluster_means, x, y = \
             generate_data_rp(N, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V,
-                             plot_data,\
-                             restaurant_process.rp_mfm, alpha_MFM, beta_MFM)
+                             plot_data, rp_mfm, alpha_MFM, beta_MFM)
                 
     elif data_type.lower() == "gm":
         num_clusters = params.num_clusters_GM
@@ -249,4 +253,6 @@ def generate_data_gm(N, num_clusters, weights, cluster_means,\
     return indicator_array, cluster_assignements, cluster_means, x, y
 
 
-
+if __name__ == "__main__":
+    # example of DPM plot including measurement noise
+    print("test")
