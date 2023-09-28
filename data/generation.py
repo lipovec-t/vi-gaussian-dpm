@@ -254,5 +254,45 @@ def generate_data_gm(N, num_clusters, weights, cluster_means,\
 
 
 if __name__ == "__main__":
-    # example of DPM plot including measurement noise
-    print("test")
+    # random seed for testing purposes
+    np.random.seed(255)
+    
+    # set parameters
+    K = 2
+    N = 25
+    # concentration parameter
+    alpha = 2
+    # parameter noise
+    mu_U    = np.zeros(K)
+    sigma_U = 1*np.eye(K)
+    # base distribution
+    mu_G    = np.zeros(K)
+    sigma_G = 5*np.eye(K)
+    # measurement noise
+    mu_V    = np.zeros(K)
+    sigma_V = np.eye(K)
+    
+    # generate data
+    _, _, _, x, y = generate_data_rp(N, mu_G, sigma_G, mu_U, sigma_U, mu_V,\
+                                     sigma_V, False, rp_dpm, alpha)
+    
+    # NOTE: need latex in system path
+    #       os.environ["PATH"] += os.pathsep + '/Library/TeX/texbin'
+    fig = plt.figure(figsize=(4.5,3.5))
+    ax = fig.add_subplot(111)
+    x1, x2 = x[:,0], x[:,1]
+    y1, y2 = y[:,0], y[:,1]
+    # connect x and y
+    X_coords= np.array([x1, y1])
+    Y_coords=np.array([x2, y2])
+    # plt.plot(X_coords, Y_coords, color='0.6')
+    # illustration of arrows is bigger in pdf plot
+    ax.quiver(x1, x2, (y1-x1), (y2-x2), angles='xy', scale_units='xy', scale=1, width=1.5, units='dots')
+    # plot DPM data without noise
+    ax.scatter(x1, x2, marker = 'o', color='None', edgecolors='k', label=r'$\bm{x}_1,\ldots,\bm{x}_N$')
+    # plot DPM data with noise
+    ax.scatter(y1, y2, marker = 'o', color='0.4', edgecolors='k', label=r'$\bm{y}_1,\ldots,\bm{y}_N$')
+    ax.set_xlabel(r'$x_{n,1}, y_{n,1}$')
+    ax.set_ylabel(r'$x_{n,2}, y_{n,2}$')
+    ax.legend()
+    plt.tight_layout()
