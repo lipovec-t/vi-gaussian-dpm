@@ -83,11 +83,11 @@ sigma_u = params.sigma_U[0,0]
 sigma_v = params.sigma_V[0,0]
 sigma_g = params.sigma_G[0,0]
 MSE_1 = (sigma_v * (sigma_u + sigma_g)) / (sigma_g + sigma_u + sigma_v)
-label = r'$\text{MSE}_{\text{min}}^{(1)}'
+label = r'$\mathrm{MSE}_{\mathrm{min}}^{(1)}$'
 plt.axhline(y=MSE_1, color='black', linestyle='-', label=label)
 MSE_2 = (sigma_v * sigma_u) / (sigma_u + sigma_v)
-label = r'$\text{MSE}_{\text{min}}^{(1)}'
-plt.axhline(y=MSE_2, color='black', linestyle='-', label=label)
+label = r'$\mathrm{MSE}_{\mathrm{min}}^{(2)}$'
+plt.axhline(y=MSE_2, color='gray', linestyle='-', label=label)
 
 plt.xlabel('Number of objects')
 plt.ylabel('Average MSE')
