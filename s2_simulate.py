@@ -23,7 +23,7 @@ alpha = params.alpha
 
 # set object count and number of MC runs
 N_array = np.arange(1,51)
-MC_runs = 50
+MC_runs = 100
 
 # Store MSE for each simulation run
 MSE_x = np.zeros((N_array.size, MC_runs))
@@ -84,10 +84,10 @@ sigma_v = params.sigma_V[0,0]
 sigma_g = params.sigma_G[0,0]
 MSE_1 = (sigma_v * (sigma_u + sigma_g)) / (sigma_g + sigma_u + sigma_v)
 label = r'$\mathrm{MSE}_{\mathrm{min}}^{(1)}$'
-plt.axhline(y=MSE_1, color='black', linestyle='-', label=label)
+plt.axhline(y=MSE_1, color='gray', linestyle='-', label=label)
 MSE_2 = (sigma_v * sigma_u) / (sigma_u + sigma_v)
 label = r'$\mathrm{MSE}_{\mathrm{min}}^{(2)}$'
-plt.axhline(y=MSE_2, color='gray', linestyle='-', label=label)
+plt.axhline(y=MSE_2, color='black', linestyle='-', label=label)
 
 plt.xlabel('Number of objects')
 plt.ylabel('Average MSE')
