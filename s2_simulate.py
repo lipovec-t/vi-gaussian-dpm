@@ -32,16 +32,19 @@ num_alpha = len(alpha)
 # set object count and number of MC runs
 N_array = np.arange(1,51)
 num_N = len(N_array)
-MC_runs = 10
+MC_runs = 500
 
-# Store MSE for each simulation run
+# Store MSE for each CAVI run
 MSE_x = np.zeros((N_array.size, MC_runs, num_alpha))
 
 # Store max elbo for each monte carlo run
 elbo_final = np.zeros((N_array.size, num_alpha))
 elbo_final[:] = -np.inf 
 
-# Simulation
+# Store runtime for each CAVI run
+runtime = np.zeros((N_array.size, MC_runs, num_alpha))
+
+#%% Simulation
 with tqdm(total=num_alpha*num_N, position=0, desc='Simulation runs') as pbar:
     for k in range(num_alpha):
         params.alpha_DPM = alpha[k]
@@ -54,9 +57,14 @@ with tqdm(total=num_alpha*num_N, position=0, desc='Simulation runs') as pbar:
                 data_dict = generate_data(params)
                 
                 # CAVI
+                t_0 = timeit.default_timer()
                 elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
+                t_1 = timeit.default_timer()
+                runtime[i, j, k] = t_1 - t_0
+                
+                # Check if elbo of this MC run is bigger than previous
                 if elbo > elbo_final[i, k]:
-                    elbo_final[i] = elbo
+                    elbo_final[i, k] = elbo
                        
                 # Postprocessing
                 results, _ = \
@@ -77,7 +85,7 @@ with tqdm(total=num_alpha*num_N, position=0, desc='Simulation runs') as pbar:
         np.save(f"results/mse{k+1}_alpha{alpha[k]}".replace(".", ""),\
                 MSE_x[:, :, k])
 
-# Save simulation notes
+#%% Save simulation notes 
 time_str = time.strftime("%Y%m%d-%H%M%S")
 alpha_values = ", ".join([str(alpha[k]) for k in range(num_alpha)])
 permutations_str = f"Number of permutations: {params.num_permutations}\n"
@@ -93,8 +101,36 @@ Max iterations:         {params.max_iterations}
 """
 with open("results/notes.txt","w+") as f:
     f.writelines(notes)
+    
+#%% Analyze how CAVI runtime scales with N 
+runtime = runtime.reshape((num_N, MC_runs*num_alpha))
+runtime_avg = np.mean(runtime,  axis=1)
+runtime_min = np.min(runtime,  axis=1)
+runtime_max = np.max(runtime,  axis=1)
 
-# Postprocessing and plots
+# 95% confidence interval
+(ci_min, ci_max) = st.t.interval(confidence = 0.95, df = runtime.shape[1]-1,\
+                                loc = runtime_avg,\
+                                scale = st.sem(runtime, axis=1))
+# Figure for runtime plot
+fig, ax = plt.subplots()
+
+# Plot average runtime 
+ax.plot(N_array, runtime_avg, color='k', label='Average')
+ax.plot(N_array, runtime_min, linestyle='dashed', color='k', label='Minimum')
+ax.plot(N_array, runtime_max, linestyle='dotted', color='k', label='Maximum')
+
+# Plot confidence interval
+label = r'$95\%$ CI'
+ax.fill_between(N_array, ci_min, ci_max, color='k', alpha=.1, label=label)
+
+# Plot settings
+ax.set_yscale('log')
+plt.xlabel('Number of objects')
+plt.ylabel('Runtime in Seconds')
+plt.legend()
+
+#%% Analyze and plot MSE 
 fig, ax = plt.subplots()
 color = ['g', 'b', 'r'] # adapt this if num_alpha > 3
 
