@@ -41,18 +41,13 @@ results, results_reduced =\
     pp.full_postprocessing(data_dict, phi, gamma, tau, False)
     
 # plots
-title = "Clustering DPM - MMSE Mean"
+title = "Clustering"
 indicatorArray = results_reduced["Estimated Cluster Indicators"]
 meanArray = results_reduced["Estimated Cluster Means"]
 pp.plot_clustering(data, title, indicatorArray, meanArray)
 
-title = "Clustering DPM - Cluster Sample Mean"
-indicatorArray = results_reduced["Estimated Cluster Indicators"]
-meanArray = results_reduced["Sample Mean of Clusters" ]
-pp.plot_clustering(data, title, indicatorArray, meanArray)
-
 plt.figure()
-# plt.title("Clustering DPM - ELBO")
+plt.title("DPM - ELBO Convergence")
 plt.xlabel("Iteration")
 plt.ylabel("ELBO")
 plt.xlim(1,50)
@@ -64,7 +59,7 @@ plt.axvline(x=elbo_converged_it[2], color='black', linestyle='--')
 plt.tight_layout()
 
 plt.figure()
-# plt.title("Clustering DPM - Predictive")
+plt.title("DPM - Predictive Convergence")
 plt.xlabel("Iteration")
 plt.ylabel("Average log predictive")
 plt.xlim(1,50)
