@@ -447,7 +447,7 @@ def plot_posterior(means, covariances, weights):
     #TODO for the case K = 2
     return
 
-def save_results(result,name):
+def save_results(result, name):
     """
     save variable result as pickle file
 

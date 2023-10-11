@@ -1,5 +1,7 @@
 # Standard library imports
 import timeit
+import time
+import os
 
 # Third party imports
 import numpy as np
@@ -16,29 +18,34 @@ from s2_config import Params
 # Random seed for testing purposes
 np.random.seed(255)
 
+# Create folder where results are saved
+os.makedirs('results', exist_ok=True)
+
 # Load parameters
 params = Params()
 K = params.K
 
 # Perform Monte Carlo simulation for three different values of alpha
-alpha = [0.5, 1, 5]
-num_sim = len(alpha)
+alpha = [0.5, 1, 5] # has to be a list with at least one value
+num_alpha = len(alpha)
 
 # set object count and number of MC runs
 N_array = np.arange(1,51)
-MC_runs = 500
+num_N = len(N_array)
+MC_runs = 10
 
 # Store MSE for each simulation run
-MSE_x = np.zeros((N_array.size, MC_runs, num_sim))
+MSE_x = np.zeros((N_array.size, MC_runs, num_alpha))
 
 # Store max elbo for each monte carlo run
-elbo_final = np.zeros((N_array.size, num_sim))
+elbo_final = np.zeros((N_array.size, num_alpha))
 elbo_final[:] = -np.inf 
 
 # Simulation
-with tqdm(total=num_sim*MC_runs, position=0, desc='Simulation runs') as pbar:
-    for k in range(num_sim):
-        params.alpha = alpha[k]
+with tqdm(total=num_alpha*num_N, position=0, desc='Simulation runs') as pbar:
+    for k in range(num_alpha):
+        params.alpha_DPM = alpha[k]
+        params.alpha     = alpha[k]
         
         for i,N in enumerate(N_array):
             for j in range(MC_runs):
@@ -65,13 +72,31 @@ with tqdm(total=num_sim*MC_runs, position=0, desc='Simulation runs') as pbar:
                 
             # Update progress bar
             pbar.update(1)
+    
+        # Save MSE results for current alpha value
+        np.save(f"results/mse{k+1}_alpha{alpha[k]}".replace(".", ""),\
+                MSE_x[:, :, k])
 
-# Save MSE results and note for simulation parameters
-# TODO
+# Save simulation notes
+time_str = time.strftime("%Y%m%d-%H%M%S")
+alpha_values = ", ".join([str(alpha[k]) for k in range(num_alpha)])
+permutations_str = f"Number of permutations: {params.num_permutations}\n"
+truncation_str = f"Truncation parameter:   {params.T}\n"
+notes = f"""\
+Simulation time:        {time_str} 
+Alpha values:           {alpha_values} 
+Initialization type:    {params.init_type}
+{permutations_str if params.init_type.lower() == "permute" else ""}\
+{truncation_str if params.init_type.lower() != "unique" else ""}\
+Convergence threshold:  {params.eps:.2e}
+Max iterations:         {params.max_iterations}
+"""
+with open("results/notes.txt","w+") as f:
+    f.writelines(notes)
 
 # Postprocessing and plots
 fig, ax = plt.subplots()
-color = ['g', 'b', 'r']
+color = ['g', 'b', 'r'] # adapt this if num_alpha > 3
 
 # Compute and plot theoretical performance bounds (independent of alpha)
 sigma_u = params.sigma_U[0,0]
@@ -85,7 +110,7 @@ label = r'$\mathrm{MSE}_{\mathrm{min}}^{(2)}$'
 plt.axhline(y=MSE_2, color='black', linestyle='-', label=label)
 
 # Plot result for each alpha run
-for k in range(num_sim):
+for k in range(num_alpha):
     # mean MSE
     MSE_x_avg = np.mean(MSE_x[:, :, k], axis=1)
     
