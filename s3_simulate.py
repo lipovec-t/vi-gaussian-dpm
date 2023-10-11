@@ -14,10 +14,10 @@ np.random.seed(255)
 # load parameters
 params = Params()
 # number of MC runs
-MC_runs = 1000
+MC_runs = 500
 
 # save results?
-save_results = True
+save_results = False
 
 # sim_data = list which stores results and ground truth for each simulation run
 # such that:
@@ -89,8 +89,7 @@ mean_accuracy_score = np.mean(accuracy_score)
 mean_OSPA = np.mean(OSPA)
 mean_RMSE = np.mean(rmse)
 
-print("\n")
-print("DPM SIMULATION")
+print()
 print(f"Mean Estimated Clusters = {mean_cluster_number}")
 print(f"Accuracy Estimated Cluster Numbers = {accuracy_clusters}%")
 print(f"Average Distance to Real Cluster Means = {accuracy_means}")

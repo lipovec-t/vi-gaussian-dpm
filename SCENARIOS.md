@@ -25,5 +25,9 @@ for multiple times for each object count N and the average MMSE result including
  is used to compare to sampling techniques.
 
 ## Scenario 3
+Files used:
+- s3_simulate.py
+- s3_simulate_Nvec.py
+- s3_config.py
 Clustering scenario where various metrics such as the accuracy score and OSPA are computed at the end of the simulation run.
 We use this scenario to compare results of variational inference using a MFM model vs. using a DPM model.

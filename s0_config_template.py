@@ -4,9 +4,18 @@ from dataclasses import dataclass
 # Third party imports
 import numpy as np
 
+################################
+# TEMPLATE FOR THE CONFIG FILE #
+# SHOWS ALL POSSIBLE OPTIONS   #
+################################
+
 @dataclass
 class Params:
-    # Model type of observed data
+    # Model type of observed data:
+    # DPM   - Gaussian Dirchlet Process Mixture
+    # MFM   - Gaussian Mixture of finite Mixtures
+    # GM    - Gaussian Mixture with fixed number of clusters
+    # load  - Load data set from file
     data_type = "DPM"
     
     # Model specific parameters - applied according to selected data type -----
@@ -44,7 +53,7 @@ class Params:
     # where sigma is either sigma_U or sigma_U+sigma_V if noise is included
     sigma_U = np.eye(K)
     
-    # Measurement noise - not considered in this scenario
+    # Measurement noise
     mu_V    = np.zeros(K)
     sigma_V = np.eye(K)
     
@@ -73,7 +82,7 @@ class Params:
     T = 20
     
     # Relative change of ELBO for convergence
-    eps = 1e-3
+    eps = 1e-2
     
     # Max iterations performed if convergence criterion is not met
     max_iterations = 100
@@ -88,4 +97,4 @@ class Params:
     # DBSCAN    - Use hard assignments of dbscan
     init_type = 'Uniform'
     # Number of initial permuations used when init_type = 'permute'
-    num_permutations = 30 # only for random permuated initialization
+    num_permutations = 30

@@ -74,7 +74,7 @@ def full_postprocessing(data_dict, phi, gamma, tau, relabel):
 
 def est_clustering_map(phi):
     """
-    MAP estimates of cluster assignments given soft assignments.
+    Approx. MAP estimates of cluster assignments given soft assignments.
 
     Parameters
     ----------
@@ -90,7 +90,7 @@ def est_clustering_map(phi):
 
 def est_cluster_weights_mmse(gamma):
     """
-    MMSE estimate of the cluster weights given variational parameter gamma.
+    Approx. MMSE est. of the cluster weights given variational parameter gamma.
 
     Parameters
     ----------
@@ -116,7 +116,7 @@ def est_cluster_weights_mmse(gamma):
 # MMSE estimate for cluster means
 def est_cluster_means_mmse(tau):
     """
-    MMSE estimate of the cluster means given variational parameter tau.
+    Approx. MMSE estimate of the cluster means given variational parameter tau.
 
     Parameters
     ----------
@@ -283,7 +283,8 @@ def reorder_results(results_reduced, data_dict):
 
 def est_object_positions(y, results, params):
     """
-    Computes the MMSE estimator of the objects position x given noisy y.
+    Computes the approx. MMSE estimator of the object features x given noisy y.
+    The true MMSE estimator assumes the local parameters theta_n to be known.
     Model: y_n = x_n + v_n where v is AWGN. 
 
     Parameters
@@ -443,7 +444,7 @@ def plot_clustering(data, title, indicatorArray, meanArray, **kwargs):
     
 
 def plot_posterior(means, covariances, weights):
-    #TODO
+    #TODO for the case K = 2
     return
 
 def save_results(result,name):
@@ -452,10 +453,10 @@ def save_results(result,name):
 
     Parameters
     ----------
-    result : TYPE
-        DESCRIPTION.
-    name : TYPE
-        DESCRIPTION.
+    result : dict
+        Dictonary with simulation results.
+    name : string
+        Additionally to the current time included in filename.
 
     Returns
     -------
@@ -472,10 +473,6 @@ def save_results(result,name):
 def load_results(filename):
     with open(filename, 'rb') as f: 
            return pickle.load(f)
-
-# MMSE estimator for cluster assigments?
-# MAP estimator for cluster means?
-# MAP estimator for cluster weights?
 
 
 

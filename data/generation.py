@@ -150,8 +150,8 @@ def generate_data_rp(N, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, plot,\
         cluster_means = np.repeat(cluster_means[np.newaxis,:], 1, axis = 0)
     
     # Mixture
-    K = len(mu_G)
-    x = np.empty((N,K))
+    K = len(mu_G) # dimension of one data point
+    x = np.empty((N,K)) # data matrix
     for i in range(N):
         mean = cluster_means[indicator_array[i]] + mu_U
         x[i,:] = multivariate_normal.rvs(mean = mean, cov = sigma_U, size = 1)
@@ -160,7 +160,7 @@ def generate_data_rp(N, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, plot,\
     v = multivariate_normal.rvs(mean = mu_V, cov = sigma_V, size = N)
     y = x + v
     
-    if plot:
+    if plot and K == 2:           
         plt.figure()
         colormap = plt.cm.get_cmap('tab20', 20)
         plt.title("Data")
