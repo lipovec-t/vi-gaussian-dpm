@@ -166,7 +166,7 @@ def generate_data_rp(N, mu_G, sigma_G, mu_U, sigma_U, mu_V, sigma_V, plot,\
         plt.title("Data")
         cx, cy = cluster_means[:,0], cluster_means[:,1]
         plt.scatter(cx, cy, c = colormap(range(num_clusters)), marker = "o")
-        dx, dy = x[:,0], x[:,1]
+        dx, dy = y[:,0], y[:,1]
         plt.scatter(dx, dy, c = colormap(indicator_array), marker = '.')
     
     return indicator_array, cluster_assignements, cluster_means, x, y

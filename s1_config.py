@@ -49,7 +49,7 @@ class Params:
     sigma_V = np.eye(K)
     
     # Covariance matrix and inverse of observations used for CAVI
-    include_noise = False
+    include_noise = True
     sigma = sigma_U+sigma_V if include_noise else sigma_U
     sigma_inv = np.linalg.inv(sigma)
     # End model specific parameters -------------------------------------------
@@ -58,7 +58,7 @@ class Params:
     N = 50
     
     # Plot observed data if true (only for K = 2)
-    plot_data = True
+    plot_data = False
     
     # Hyperparameters for CAVI for DPM 
     # Here assumed to be know, i.e, calculated from the model statistics,
@@ -86,6 +86,6 @@ class Params:
     # AllInOne  - Put all datapoints in one cluster
     # Kmeans    - Use hard assignments of kmeans
     # DBSCAN    - Use hard assignments of dbscan
-    init_type = 'Uniform'
+    init_type = 'Unique'
     # Number of initial permuations used when init_type = 'permute'
     num_permutations = 30 # only for random permuated initialization
