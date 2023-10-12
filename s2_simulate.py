@@ -15,9 +15,6 @@ from vi.cavi import coordinates_ascent
 from vi import postprocessing as pp
 from s2_config import Params
 
-# Random seed for testing purposes
-np.random.seed(255)
-
 # Create folder where results are saved
 os.makedirs('results', exist_ok=True)
 
@@ -47,6 +44,10 @@ runtime = np.zeros((N_array.size, MC_runs, num_alpha))
 #%% Simulation
 with tqdm(total=num_alpha*num_N, position=0, desc='Simulation runs') as pbar:
     for k in range(num_alpha):
+        # Random seed for testing purposes
+        np.random.seed(255)
+        
+        # Set concentration parameter
         params.alpha_DPM = alpha[k]
         params.alpha     = alpha[k]
         

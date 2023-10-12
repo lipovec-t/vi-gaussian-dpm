@@ -10,7 +10,7 @@ class Params:
     data_type = "DPM"
     
     # Concentration parameter
-    alpha_DPM = 1 
+    # alpha_DPM = 1 - set by simulation script
     
     # Data dimension
     K = 2 
@@ -45,7 +45,7 @@ class Params:
     lamda1_temp = np.matmul(np.linalg.inv(sigma), sigma_G)
     lamda[-1] = 1/lamda1_temp[0,0]
     lamda[:-1] = lamda[-1]*mu_G
-    alpha = alpha_DPM
+    # alpha = alpha_DPM - set by simulation script
     
     # Truncation parameter
     T = 20
