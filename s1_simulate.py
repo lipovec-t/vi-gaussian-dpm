@@ -1,8 +1,9 @@
 # Standard library imports
-import timeit
+import os
 
 # Third party imports
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Local application imports
 from data.generation import generate_data
@@ -10,43 +11,73 @@ from vi.cavi import coordinates_ascent
 from vi import postprocessing as pp
 from s1_config import Params
 
-# random seed for testing purposes
-np.random.seed(255)
-
 # load parameters
 params = Params()
 
-# generate data
+# plot settings
+os.environ["PATH"] += os.pathsep + '/Library/TeX/texbin'
+plot_params = {"text.usetex"         : True,
+               "font.family"         : "serif",
+               "font.size"           : "11",
+               'text.latex.preamble' : r"\usepackage{bm}"}
+plt.rcParams.update(plot_params)
+
+#%% CAVI - Compare different clustering solutions
+np.random.seed(255)
+alpha = 0.5
+params.alpha_DPM = alpha
+params.alpha     = alpha
 data_dict = generate_data(params)
-if params.include_noise == False:
-    data = data_dict["Datapoints"]
-else:
-    data = data_dict["Noisy Datapoints"]
+data = data_dict["Noisy Datapoints"]
+_, tau, gamma, phi = coordinates_ascent(data_dict, params)
 
-# start timer
-t_0 = timeit.default_timer()
-
-# CAVI
-elbo_final, tau, gamma, phi = coordinates_ascent(data_dict, params)
-# end timer
-
-# end timer and compute elapsed time
-t_1 = timeit.default_timer()
-runtime = t_1 - t_0
-
-# postprocessing
+# Postprocessing and Plot
 results, results_reduced =\
     pp.full_postprocessing(data_dict, phi, gamma, tau, False)
-    
-# plots
-title = "Clustering DPM - MMSE Mean"
+title = "Estimated Clustering"
 indicatorArray = results_reduced["Estimated Cluster Indicators"]
 meanArray = results_reduced["Estimated Cluster Means"]
 pp.plot_clustering(data, title, indicatorArray, meanArray)
 
-title = "Clustering DPM - Cluster Sample Mean"
-indicatorArray = results_reduced["Estimated Cluster Indicators"]
-meanArray = results_reduced["Sample Mean of Clusters" ]
-pp.plot_clustering(data, title, indicatorArray, meanArray)
+#%% CAVI - Compare ELBO
+np.random.seed(255)
+data_dict = generate_data(params)
+data = data_dict["Noisy Datapoints"]
 
+plt.figure()
+plt.title(r"Convergence for $\alpha = 5$")
+plt.xlabel("Number of iterations")
+plt.ylabel("ELBO")
 
+params.init_type = "uniform"
+elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
+plt.plot(np.trim_zeros(elbo, 'b'), color='b', label="Uniform")
+
+params.init_type = "true"
+elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
+plt.plot(np.trim_zeros(elbo, 'b'), color='g', label="True")
+
+params.init_type = "permute"
+elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
+plt.plot(np.trim_zeros(elbo, 'b'), color='r', label="Random")
+
+params.init_type = "unique"
+elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
+plt.plot(np.trim_zeros(elbo, 'b'), color='c', label="Unique")
+
+params.init_type = "AllInOne"
+elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
+plt.plot(np.trim_zeros(elbo, 'b'), color='m', label="One Cluster")
+
+params.init_type = "Kmeans"
+elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
+plt.plot(np.trim_zeros(elbo, 'b'), color='y', label="KMeans")
+
+params.init_type = "DBSCAN"
+elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
+plt.plot(np.trim_zeros(elbo, 'b'), color='k', label="DBSCAN")
+
+plt.xlim((0,30))
+plt.grid()
+plt.legend()
+plt.tight_layout()

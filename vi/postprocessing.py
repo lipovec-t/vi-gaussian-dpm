@@ -430,7 +430,7 @@ def plot_clustering(data, title, indicatorArray, meanArray, **kwargs):
     else:
         meanIndicators = np.unique(indicatorArray)
         
-    plt.figure()
+    plt.figure(figsize=(2.5,2))
     plt.title(title)
     T = meanArray.shape[0]
     if T > 20:
