@@ -32,7 +32,7 @@ params.alpha_DPM = alpha
 params.alpha     = alpha
 data_dict = generate_data(params)
 data = data_dict["Noisy Datapoints"]
-_, tau, gamma, phi = coordinates_ascent(data_dict, params)
+_, _, tau, gamma, phi = coordinates_ascent(data_dict, params)
 
 # Postprocessing
 results, results_reduced =\
@@ -40,7 +40,6 @@ results, results_reduced =\
     
 # Plot true clustering
 title = "True Clustering"
-data = data_dict["Noisy Datapoints"]
 indicatorArray = data_dict["True Cluster Indicators"]
 meanArray = data_dict["True Cluster Means"]
 pp.plot_clustering(data, title, indicatorArray, meanArray)
@@ -58,12 +57,14 @@ plt.savefig(f"results/est_clusters_alpha{alpha}.pdf".replace(".", "", 1),\
             format="pdf", bbox_inches="tight")
 
 #%% CAVI - Compare ELBO
-np.random.seed(2322259932) # 55, 687
+np.random.seed(2322259932) 
 alpha = 5
 params.alpha_DPM = alpha
 params.alpha     = alpha
 data_dict = generate_data(params)
 data = data_dict["Noisy Datapoints"]
+
+elbo_converged_it = np.zeros(7, dtype='int')
 
 fig1, ax1 = plt.subplots()
 ax1.set_title(r"Convergence for $\alpha = 5$")
@@ -71,34 +72,42 @@ ax1.set_xlabel("ELBO")
 ax1.set_ylabel("Number of iterations")
 
 params.init_type = "uniform"
-elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
+elbo, elbo_converged_it[0], tau, gamma, phi = coordinates_ascent(data_dict, params)
 ax1.plot(np.trim_zeros(elbo, 'b'), color='b', label="Uniform")
+# ax1.plot(elbo_converged_it[0], elbo[elbo_converged_it[0]], marker='x')
+plt.axvline(x=elbo_converged_it[0], color='b', linestyle='--')
 
 params.init_type = "true"
-elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
+elbo, elbo_converged_it[1], tau, gamma, phi = coordinates_ascent(data_dict, params)
 ax1.plot(np.trim_zeros(elbo, 'b'), color='g', label="True")
+plt.axvline(x=elbo_converged_it[1], color='g', linestyle='--')
 
 params.init_type = "permute"
-elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
+elbo, elbo_converged_it[2], tau, gamma, phi = coordinates_ascent(data_dict, params)
 ax1.plot(np.trim_zeros(elbo, 'b'), color='r', label="Random")
+plt.axvline(x=elbo_converged_it[2], color='r', linestyle='--')
 
 params.init_type = "unique"
-elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
+elbo, elbo_converged_it[3], tau, gamma, phi = coordinates_ascent(data_dict, params)
 ax1.plot(np.trim_zeros(elbo, 'b'), color='c', label="Unique")
+plt.axvline(x=elbo_converged_it[3], color='c', linestyle='--')
 
 params.init_type = "AllInOne"
-elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
+elbo, elbo_converged_it[4], tau, gamma, phi = coordinates_ascent(data_dict, params)
 ax1.plot(np.trim_zeros(elbo, 'b'), color='m', label="One Cluster")
+plt.axvline(x=elbo_converged_it[4], color='m', linestyle='--')
 
 params.init_type = "Kmeans"
-elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
+elbo, elbo_converged_it[5], tau, gamma, phi = coordinates_ascent(data_dict, params)
 ax1.plot(np.trim_zeros(elbo, 'b'), color='y', label="KMeans")
+plt.axvline(x=elbo_converged_it[5], color='y', linestyle='--')
 
 params.init_type = "DBSCAN"
-elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
+elbo, elbo_converged_it[6], tau, gamma, phi = coordinates_ascent(data_dict, params)
 ax1.plot(np.trim_zeros(elbo, 'b'), color='k', label="DBSCAN")
+plt.axvline(x=elbo_converged_it[6], color='k', linestyle='--')
 
-ax1.set_xlim((0,40))
+ax1.set_xlim((0,30))
 ax1.grid()
 ax1.legend()
 fig1.tight_layout()

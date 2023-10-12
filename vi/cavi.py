@@ -43,6 +43,9 @@ def coordinates_ascent(data_dict, params):
         gamma_temp = update_gamma(phi_temp,alpha)
         tau_temp = update_tau(data, lamda, phi_temp)
         
+        elbo_is_converged = False
+        elbo_converged_it = max_iterations
+        
         for i in range(max_iterations):
             # compute variational updates
             phi_temp = update_phi(data, gamma_temp, tau_temp, \
@@ -53,16 +56,16 @@ def coordinates_ascent(data_dict, params):
             # compute elbo and check convergence
             elbo[i] = compute_elbo(alpha, lamda, data, gamma_temp, phi_temp, \
                                    tau_temp, sigma, mu_G, sigma_G, sigma_inv)
-            if i>0 and np.abs(elbo[i]-elbo[i-1])/np.abs(elbo[i-1]) * 100 < eps:
-                break
+        
+            # check convergence of elbo
+            if i>5 and np.abs(elbo[i]-elbo[i-1])/np.abs(elbo[i-1]) * 100 < 1e-3 and not elbo_is_converged:
+                elbo_converged_it = i
+                elbo_is_converged = True
+                tau = tau_temp
+                gamma = gamma_temp
+                phi = phi_temp
             
-        if elbo[i] > elbo_final:
-            elbo_final = elbo[i]
-            tau = tau_temp
-            gamma = gamma_temp
-            phi = phi_temp
-            
-    return elbo, tau, gamma, phi
+    return elbo, elbo_converged_it, tau, gamma, phi
 
 def _init(data_dict, params):
     # truncation parameter and number of data points
