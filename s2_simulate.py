@@ -15,9 +15,6 @@ from vi.cavi import coordinates_ascent
 from vi import postprocessing as pp
 from s2_config import Params
 
-# Random seed for testing purposes
-np.random.seed(255)
-
 # Create folder where results are saved
 os.makedirs('results', exist_ok=True)
 
@@ -44,9 +41,17 @@ elbo_final[:] = -np.inf
 # Store runtime for each CAVI run
 runtime = np.zeros((N_array.size, MC_runs, num_alpha))
 
+# Random seed for each alpha run
+seed = None
+
 #%% Simulation
 with tqdm(total=num_alpha*num_N, position=0, desc='Simulation runs') as pbar:
     for k in range(num_alpha):
+        # Set random seed
+        if seed != None:
+            np.random.seed(seed)
+        
+        # Set concentration parameter
         params.alpha_DPM = alpha[k]
         params.alpha     = alpha[k]
         
@@ -91,13 +96,16 @@ alpha_values = ", ".join([str(alpha[k]) for k in range(num_alpha)])
 permutations_str = f"Number of permutations: {params.num_permutations}\n"
 truncation_str = f"Truncation parameter:   {params.T}\n"
 notes = f"""\
-Simulation time:        {time_str} 
+Simulation date:        {time_str}
+Total CAVI runtime:     {np.sum(runtime):.2f} s
 Alpha values:           {alpha_values} 
 Initialization type:    {params.init_type}
 {permutations_str if params.init_type.lower() == "permute" else ""}\
 {truncation_str if params.init_type.lower() != "unique" else ""}\
 Convergence threshold:  {params.eps:.2e}
 Max iterations:         {params.max_iterations}
+MC runs:                {MC_runs}
+Random seed:            {seed}
 """
 with open("results/notes.txt","w+") as f:
     f.writelines(notes)
