@@ -58,44 +58,47 @@ plt.savefig(f"results/est_clusters_alpha{alpha}.pdf".replace(".", "", 1),\
             format="pdf", bbox_inches="tight")
 
 #%% CAVI - Compare ELBO
-np.random.seed(255)
+np.random.seed(2322259932) # 55, 687
+alpha = 5
+params.alpha_DPM = alpha
+params.alpha     = alpha
 data_dict = generate_data(params)
 data = data_dict["Noisy Datapoints"]
 
-plt.figure()
-plt.title(r"Convergence for $\alpha = 5$")
-plt.xlabel("Number of iterations")
-plt.ylabel("ELBO")
+fig1, ax1 = plt.subplots()
+ax1.set_title(r"Convergence for $\alpha = 5$")
+ax1.set_xlabel("ELBO")
+ax1.set_ylabel("Number of iterations")
 
 params.init_type = "uniform"
 elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
-plt.plot(np.trim_zeros(elbo, 'b'), color='b', label="Uniform")
+ax1.plot(np.trim_zeros(elbo, 'b'), color='b', label="Uniform")
 
 params.init_type = "true"
 elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
-plt.plot(np.trim_zeros(elbo, 'b'), color='g', label="True")
+ax1.plot(np.trim_zeros(elbo, 'b'), color='g', label="True")
 
 params.init_type = "permute"
 elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
-plt.plot(np.trim_zeros(elbo, 'b'), color='r', label="Random")
+ax1.plot(np.trim_zeros(elbo, 'b'), color='r', label="Random")
 
 params.init_type = "unique"
 elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
-plt.plot(np.trim_zeros(elbo, 'b'), color='c', label="Unique")
+ax1.plot(np.trim_zeros(elbo, 'b'), color='c', label="Unique")
 
 params.init_type = "AllInOne"
 elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
-plt.plot(np.trim_zeros(elbo, 'b'), color='m', label="One Cluster")
+ax1.plot(np.trim_zeros(elbo, 'b'), color='m', label="One Cluster")
 
 params.init_type = "Kmeans"
 elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
-plt.plot(np.trim_zeros(elbo, 'b'), color='y', label="KMeans")
+ax1.plot(np.trim_zeros(elbo, 'b'), color='y', label="KMeans")
 
 params.init_type = "DBSCAN"
 elbo, tau, gamma, phi = coordinates_ascent(data_dict, params)
-plt.plot(np.trim_zeros(elbo, 'b'), color='k', label="DBSCAN")
+ax1.plot(np.trim_zeros(elbo, 'b'), color='k', label="DBSCAN")
 
-plt.xlim((0,30))
-plt.grid()
-plt.legend()
-plt.tight_layout()
+ax1.set_xlim((0,40))
+ax1.grid()
+ax1.legend()
+fig1.tight_layout()

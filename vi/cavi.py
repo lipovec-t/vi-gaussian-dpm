@@ -62,7 +62,7 @@ def coordinates_ascent(data_dict, params):
             gamma = gamma_temp
             phi = phi_temp
             
-    return elbo_final, tau, gamma, phi
+    return elbo, tau, gamma, phi
 
 def _init(data_dict, params):
     # truncation parameter and number of data points
@@ -114,7 +114,7 @@ def _init(data_dict, params):
            phi_init[k,label[k]] = 1
     elif params.init_type.lower() == 'dbscan':
         data_transformed = StandardScaler().fit_transform(data)
-        db = DBSCAN(eps=0.3, min_samples=10).fit(data_transformed)
+        db = DBSCAN(eps=0.5, min_samples=7).fit(data_transformed)
         label = db.labels_
         n_noise = list(label).count(-1)
         n_clusters = len(set(label)) - (1 if -1 in label else 0)
