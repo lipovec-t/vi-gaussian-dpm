@@ -17,8 +17,9 @@ from vi.elbo import compute_elbo
 
 def coordinates_ascent(data_dict, params):
     # load params
-    phi_init        = _init(data_dict, params)
     max_iterations  = params.max_iterations
+    K               = params.K
+    T               = params.T
     alpha           = params.alpha
     sigma           = params.sigma
     sigma_inv       = params.sigma_inv
@@ -27,40 +28,72 @@ def coordinates_ascent(data_dict, params):
     lamda           = params.lamda
     eps             = params.eps
     
+    # initialize
+    if params.init_type.lower() != 'global':
+        phi_init        = _init(data_dict, params)
+        # multiple phi initializations are saved in the 3rd dim of phi_init
+        num_permutations = phi_init.shape[2]
+    elif params.init_type.lower() == 'global':
+        tau_init = np.zeros((T,K+1))
+        gamma_init = np.zeros((T,2))
+        num_permutations = 1
+        for t in range(params.T): 
+            tau_init[t,:-1] = lamda[:-1]
+            tau_init[t,-1] = lamda[-1]
+            gamma_init[t,0] = 1
+            gamma_init[t,1] = alpha
+            gamma_init[-1,:] = np.array([1, 0.001])
+            
+    
     # extract data from data_dict
     if params.include_noise:
         data = data_dict["Noisy Datapoints"]
     else:
-        data = data_dict["Datapoints"]
+        data = data_dict["Datapoints"]  
     
-    # multiple phi initializations are saved in the 3rd dim of phi_init
-    num_permutations = phi_init.shape[2]
     elbo = np.zeros(max_iterations)
-    elbo_final = -np.inf
     
     for j in range(num_permutations):
-        phi_temp = phi_init[:,:,j]          
-        gamma_temp = update_gamma(phi_temp,alpha)
-        tau_temp = update_tau(data, lamda, phi_temp)
-        
+        # init variational parameters in correct order
+        if params.init_type.lower() != 'global':
+            phi_temp = phi_init[:,:,j]          
+            gamma_temp = update_gamma(phi_temp,alpha)
+            tau_temp = update_tau(data, lamda, phi_temp)
+        else:
+            tau_temp = tau_init
+            gamma_temp = gamma_init
+            phi_temp = update_phi(data, gamma_temp, tau_temp, \
+                                  lamda, sigma, sigma_inv)
+            
         elbo_is_converged = False
         elbo_converged_it = max_iterations
         
         for i in range(max_iterations):
-            # compute variational updates
-            phi_temp = update_phi(data, gamma_temp, tau_temp, \
-                                  lamda, sigma, sigma_inv)
-            gamma_temp = update_gamma(phi_temp, alpha)
-            tau_temp = update_tau(data, lamda, phi_temp)
+            # compute variational updates in correct order
+            if params.init_type.lower() != 'global':
+                phi_temp = update_phi(data, gamma_temp, tau_temp, \
+                                      lamda, sigma, sigma_inv)
+                gamma_temp = update_gamma(phi_temp, alpha)
+                tau_temp = update_tau(data, lamda, phi_temp)
+            else:
+                tau_temp = update_tau(data, lamda, phi_temp)
+                gamma_temp = update_gamma(phi_temp, alpha)
+                phi_temp = update_phi(data, gamma_temp, tau_temp, \
+                                      lamda, sigma, sigma_inv)
             
             # compute elbo and check convergence
             elbo[i] = compute_elbo(alpha, lamda, data, gamma_temp, phi_temp, \
                                    tau_temp, sigma, mu_G, sigma_G, sigma_inv)
         
             # check convergence of elbo
-            if i>5 and np.abs(elbo[i]-elbo[i-1])/np.abs(elbo[i-1]) * 100 < 1e-3 and not elbo_is_converged:
+            if i>5 and np.abs(elbo[i]-elbo[i-1])/np.abs(elbo[i-1]) < eps and not elbo_is_converged:
                 elbo_converged_it = i
                 elbo_is_converged = True
+                tau = tau_temp
+                gamma = gamma_temp
+                phi = phi_temp
+            elif i == (max_iterations-1) and not elbo_is_converged:
+                print(f"ELBO is not converged for {params.init_type}")
                 tau = tau_temp
                 gamma = gamma_temp
                 phi = phi_temp

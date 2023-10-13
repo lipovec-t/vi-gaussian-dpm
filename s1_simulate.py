@@ -52,7 +52,7 @@ indicatorArray = results_reduced["MMSE Estimated Cluster Indicators"]
 meanArray = results_reduced["MMSE Estimated Cluster Means"]
 meanIndicators = results_reduced["MMSE Mean Indicators"]
 pp.plot_clustering(data, title, indicatorArray, meanArray,\
-                   meanIndicators=meanIndicators)
+                    meanIndicators=meanIndicators)
 plt.savefig(f"results/est_clusters_alpha{alpha}.pdf".replace(".", "", 1),\
             format="pdf", bbox_inches="tight")
 
@@ -64,7 +64,7 @@ params.alpha     = alpha
 data_dict = generate_data(params)
 data = data_dict["Noisy Datapoints"]
 
-elbo_converged_it = np.zeros(7, dtype='int')
+elbo_converged_it = np.zeros(8, dtype='int')
 
 fig1, ax1 = plt.subplots()
 ax1.set_title(r"Convergence for $\alpha = 5$")
@@ -107,7 +107,12 @@ elbo, elbo_converged_it[6], tau, gamma, phi = coordinates_ascent(data_dict, para
 ax1.plot(np.trim_zeros(elbo, 'b'), color='k', label="DBSCAN")
 plt.axvline(x=elbo_converged_it[6], color='k', linestyle='--')
 
-ax1.set_xlim((0,30))
+params.init_type = "global"
+elbo, elbo_converged_it[7], tau, gamma, phi = coordinates_ascent(data_dict, params)
+ax1.plot(np.trim_zeros(elbo, 'b'), color='brown', label="Global")
+plt.axvline(x=elbo_converged_it[7], color='brown', linestyle='--')
+
+ax1.set_xlim((0,40))
 ax1.grid()
 ax1.legend()
 fig1.tight_layout()
