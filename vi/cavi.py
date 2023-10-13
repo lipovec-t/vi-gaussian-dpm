@@ -7,7 +7,7 @@ from sklearn.preprocessing import StandardScaler
 
 # Local application imports
 from . import expectations as expec
-from vi.elbo import compute_elbo
+from vi.elbo import compute_elbo, compute_predictive
 
 # Dimensions
 # K -> dimension of data points x_n
@@ -48,10 +48,13 @@ def coordinates_ascent(data_dict, params):
     # extract data from data_dict
     if params.include_noise:
         data = data_dict["Noisy Datapoints"]
+        data_pred = data_dict["Noisy Datapoints Held Out"]
     else:
-        data = data_dict["Datapoints"]  
+        data = data_dict["Datapoints"]
+        data_pred = data_dict["Datapoints Held Out"]
     
     elbo = np.zeros(max_iterations)
+    predictive = np.zeros(max_iterations)
     
     for j in range(num_permutations):
         # init variational parameters in correct order
@@ -67,6 +70,9 @@ def coordinates_ascent(data_dict, params):
             
         elbo_is_converged = False
         elbo_converged_it = max_iterations
+        
+        predictive_is_converged = False
+        predictive_converged_it = max_iterations
         
         for i in range(max_iterations):
             # compute variational updates in correct order
@@ -84,9 +90,13 @@ def coordinates_ascent(data_dict, params):
             # compute elbo and check convergence
             elbo[i] = compute_elbo(alpha, lamda, data, gamma_temp, phi_temp, \
                                    tau_temp, sigma, mu_G, sigma_G, sigma_inv)
+            
+            # compute predictive for held out data set
+            if data_pred.any():
+                predictive[i] = compute_predictive(data_pred, gamma_temp, tau_temp, sigma)
         
-            # check convergence of elbo
-            if i>5 and np.abs(elbo[i]-elbo[i-1])/np.abs(elbo[i-1]) < eps and not elbo_is_converged:
+            # check convergence of elbo through percental change
+            if i>5 and np.abs(elbo[i]-elbo[i-1])/np.abs(elbo[i-1]) * 100 < eps and not elbo_is_converged:
                 elbo_converged_it = i
                 elbo_is_converged = True
                 tau = tau_temp
@@ -98,18 +108,32 @@ def coordinates_ascent(data_dict, params):
                 gamma = gamma_temp
                 phi = phi_temp
             
-    return elbo, elbo_converged_it, tau, gamma, phi
+            # check convergence of predictive dist through percental change
+            if data_pred.any() and i>0 and np.abs(predictive[i]-predictive[i-1])/np.abs(predictive[i-1]) * 100 < eps and not predictive_is_converged:
+                predictive_converged_it = i
+                predictive_is_converged = True
+                tau = tau_temp
+                gamma = gamma_temp
+                phi = phi_temp
+            elif data_pred.any() and i == (max_iterations-1) and not predictive_is_converged:
+                print(f"Predictive is not converged for {params.init_type}")
+                tau = tau_temp
+                gamma = gamma_temp
+                phi = phi_temp
+            
+    return elbo, elbo_converged_it, predictive, predictive_converged_it, tau, gamma, phi
 
 def _init(data_dict, params):
     # truncation parameter and number of data points
     T = params.T
-    N = params.N
     
     # extract data from data_dict
     if params.include_noise:
         data = data_dict["Noisy Datapoints"]
     else:
         data = data_dict["Datapoints"]
+    
+    N = data.shape[0]
         
     # initialization
     # NOTE: T has to be higher than the true number of clusters

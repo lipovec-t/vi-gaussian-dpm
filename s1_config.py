@@ -73,7 +73,7 @@ class Params:
     T = 20
     
     # Relative change of ELBO for convergence
-    eps = 1e-3
+    eps = 1e-2
     
     # Max iterations performed if convergence criterion is not met
     max_iterations = 100

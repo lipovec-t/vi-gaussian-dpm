@@ -28,6 +28,7 @@ plt.rcParams.update(plot_params)
 #%% CAVI - Clustering
 alphaArray = [0.5,1,5]
 seedArray = [101,255,255]
+params.N = 50
 
 for (alpha, seed) in zip(alphaArray, seedArray):
     np.random.seed(seed)
@@ -35,7 +36,7 @@ for (alpha, seed) in zip(alphaArray, seedArray):
     params.alpha     = alpha
     data_dict = generate_data(params)
     data = data_dict["Noisy Datapoints"]
-    _, _, tau, gamma, phi = coordinates_ascent(data_dict, params)
+    _, _, _, _, tau, gamma, phi = coordinates_ascent(data_dict, params)
     
     # Postprocessing
     results, results_reduced =\
