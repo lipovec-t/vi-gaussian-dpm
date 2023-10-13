@@ -33,6 +33,7 @@ def coordinates_ascent(data_dict, params):
         phi_init        = _init(data_dict, params)
         # multiple phi initializations are saved in the 3rd dim of phi_init
         num_permutations = phi_init.shape[2]
+        num_permutations = 1
     elif params.init_type.lower() == 'global':
         tau_init = np.zeros((T,K+1))
         gamma_init = np.zeros((T,2))
@@ -59,7 +60,7 @@ def coordinates_ascent(data_dict, params):
     for j in range(num_permutations):
         # init variational parameters in correct order
         if params.init_type.lower() != 'global':
-            phi_temp = phi_init[:,:,j]          
+            phi_temp = phi_init[:,:,j] 
             gamma_temp = update_gamma(phi_temp,alpha)
             tau_temp = update_tau(data, lamda, phi_temp)
         else:
@@ -151,6 +152,8 @@ def _init(data_dict, params):
         for j in range(num_perm):
             for k in range(N):
                phi_init[k,rand_indicators[j][k],j] = 1
+        # choose one of the permutations - just for this scenario
+        phi_init = np.expand_dims(phi_init[:,:,1],2)
     elif params.init_type.lower() == 'unique':
         params.T = N
         phi_init = np.eye(N)
@@ -162,19 +165,21 @@ def _init(data_dict, params):
         for j in range(num_perm):
             for k in range(N):
                 phi_init[k,rand_indicators[j],j] = 1
+        # choose one of the permutations - just for this scenario
+        phi_init = np.expand_dims(phi_init[:,:,0],2)
     elif params.init_type.lower() == 'kmeans':
         # round mean of poisson prior to nearest int
         cluster_init = round(params.alpha * np.log((params.alpha+N)/params.alpha))
         # have at least one cluster
         if cluster_init == 0:
             cluster_init = 1
-        _, label = kmeans2(data, cluster_init, minit='points')
+        _, label = kmeans2(data, cluster_init, minit='random')
         phi_init = np.zeros((N,T,1))
         for k in range(N):
            phi_init[k,label[k]] = 1
     elif params.init_type.lower() == 'dbscan':
         data_transformed = StandardScaler().fit_transform(data)
-        db = DBSCAN(eps=0.5, min_samples=7).fit(data_transformed)
+        db = DBSCAN(eps=0.7, min_samples=7).fit(data_transformed)
         label = db.labels_
         n_noise = list(label).count(-1)
         n_clusters = len(set(label)) - (1 if -1 in label else 0)

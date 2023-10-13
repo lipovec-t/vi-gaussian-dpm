@@ -55,7 +55,7 @@ class Params:
     # End model specific parameters -------------------------------------------
     
     # Number of data points
-    N = 75
+    N = 50
     
     # Plot observed data if true (only for K = 2)
     plot_data = False
@@ -88,4 +88,4 @@ class Params:
     # DBSCAN    - Use hard assignments of dbscan
     init_type = 'Unique'
     # Number of initial permuations used when init_type = 'permute'
-    num_permutations = 1 # only for random permuated initialization
+    num_permutations = 20 # only for random permuated initialization

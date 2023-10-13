@@ -4,6 +4,7 @@ import os
 # Third party imports
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator
 
 # Local application imports
 from data.generation import generate_data
@@ -35,24 +36,22 @@ data = data_dict["Noisy Datapoints"]
 elbo_converged_it = np.zeros(8, dtype='int')
 predictive_converged_it = np.zeros(8, dtype='int')
 
-fig1, (ax11, ax12) = plt.subplots(1, 2)
-fig1.suptitle(r'Convergence for $\alpha = 5$')
-ax11.set_xlabel("ELBO")
-ax11.set_ylabel("Number of iterations")
-ax12.set_xlabel("ELBO")
-ax12.set_ylabel("Number of iterations")
+fig1, (ax11, ax12) = plt.subplots(1, 2, figsize=(6.2, 3.5), sharey=True)
+fig1.suptitle(r'Convergence of the ELBO for $\alpha = 5$', y=0.94)
+ax11.set_ylabel("ELBO")
+ax11.set_xlabel("Number of iterations")
+ax12.set_xlabel("Number of iterations")
 
-fig2, (ax21, ax22) = plt.subplots(1, 2)
-fig2.suptitle(r'Convergence for $\alpha = 5$')
+fig2, (ax21, ax22) = plt.subplots(1, 2, figsize=(6.2, 3.5), sharey=True)
+fig2.suptitle(r'Convergence of the Predictive Dist. for $\alpha = 5$')
 ax21.set_xlabel("Predictive")
 ax21.set_ylabel("Number of iterations")
-ax22.set_xlabel("Predictive")
 ax22.set_ylabel("Number of iterations")
 
 params.init_type = "uniform"
 elbo, elbo_converged_it[0], predictive, predictive_converged_it[0], tau, gamma, phi = coordinates_ascent(data_dict, params)
-ax11.plot(np.trim_zeros(elbo, 'b'), color='b', label="Uniform")
-ax11.axvline(x=elbo_converged_it[0], color='b', linestyle='--')
+ax12.plot(np.trim_zeros(elbo, 'b'), color='b', label="Uniform")
+ax12.axvline(x=elbo_converged_it[0], color='b', linestyle='--')
 ax21.plot(np.trim_zeros(predictive, 'b'), color='b', label="Uniform")
 ax21.axvline(x=predictive_converged_it[0], color='b', linestyle='--')
 
@@ -79,8 +78,8 @@ ax21.axvline(x=predictive_converged_it[3], color='c', linestyle='--')
 
 params.init_type = "AllInOne"
 elbo, elbo_converged_it[4], predictive, predictive_converged_it[4], tau, gamma, phi = coordinates_ascent(data_dict, params)
-ax12.plot(np.trim_zeros(elbo, 'b'), color='m', label="One Cluster")
-ax12.axvline(x=elbo_converged_it[4], color='m', linestyle='--')
+ax11.plot(np.trim_zeros(elbo, 'b'), color='m', label="One Cluster")
+ax11.axvline(x=elbo_converged_it[4], color='m', linestyle='--')
 ax22.plot(np.trim_zeros(predictive, 'b'), color='m', label="One Cluster")
 ax22.axvline(x=predictive_converged_it[4], color='m', linestyle='--')
 
@@ -105,18 +104,25 @@ ax12.axvline(x=elbo_converged_it[7], color='brown', linestyle='--')
 ax22.plot(np.trim_zeros(predictive, 'b'), color='brown', label="Global")
 ax22.axvline(x=predictive_converged_it[7], color='brown', linestyle='--')
 
-ax11.set_xlim((0,40))
+xlim = 40
+
+ax11.set_xlim((0,xlim))
+ax11.xaxis.set_minor_locator(MultipleLocator(1))
 ax11.grid()
-ax11.legend()
-ax12.set_xlim((0,40))
+ax11.legend(loc = 'center right')
+ax12.set_xlim((0,xlim))
+ax12.xaxis.set_minor_locator(MultipleLocator(1))
 ax12.grid()
-ax12.legend()
+ax12.legend(loc = 'center right')
 fig1.tight_layout()
 
-ax21.set_xlim((0,40))
+ax21.set_xlim((0,xlim))
 ax21.grid()
 ax21.legend()
-ax22.set_xlim((0,40))
+ax22.set_xlim((0,xlim))
 ax22.grid()
 ax22.legend()
 fig2.tight_layout()
+
+plt.close(fig2)
+plt.savefig("results/convergence_elbo.pdf", format="pdf", bbox_inches="tight")
