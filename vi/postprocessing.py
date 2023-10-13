@@ -439,11 +439,12 @@ def plot_clustering(data, title, indicatorArray, meanArray, **kwargs):
     cx = meanArray[:,0]
     cy = meanArray[:,1]
     plt.scatter(cx, cy, c=colormap(meanIndicators),\
-                marker="o", s=20, edgecolors="black")
+                marker="o", s=28, edgecolors="black")
     da, dy = data[:,0], data[:,1]
-    plt.scatter(da, dy, c=colormap(indicatorArray), marker='.', s=15)
+    plt.scatter(da, dy, c=colormap(indicatorArray), marker='.', s=20)
     plt.xlabel(r"$y_{n,1}$", labelpad=-6)
     plt.ylabel(r"$y_{n,2}$", labelpad=-6)
+
     
 
 def plot_posterior(means, covariances, weights):
