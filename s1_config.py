@@ -55,7 +55,7 @@ class Params:
     # End model specific parameters -------------------------------------------
     
     # Number of data points
-    N = 50
+    N = 75
     
     # Plot observed data if true (only for K = 2)
     plot_data = False
