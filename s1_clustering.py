@@ -27,7 +27,7 @@ plt.rcParams.update(plot_params)
 
 #%% CAVI - Clustering
 alphaArray = [0.5,1,5]
-seedArray = [101,244,22]
+seedArray = [101,236,22]
 params.N = 50
 
 for (alpha, seed) in zip(alphaArray, seedArray):
