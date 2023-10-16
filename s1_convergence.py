@@ -123,6 +123,3 @@ ax22.set_xlim((0,xlim))
 ax22.grid()
 ax22.legend()
 fig2.tight_layout()
-
-plt.close(fig2)
-plt.savefig("results/convergence_elbo.pdf", format="pdf", bbox_inches="tight")

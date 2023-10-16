@@ -70,7 +70,7 @@ class Params:
     alpha = 1
     
     # Truncation parameter
-    T = 20
+    T = 30
     
     # Relative change of ELBO for convergence
     eps = 1e-2

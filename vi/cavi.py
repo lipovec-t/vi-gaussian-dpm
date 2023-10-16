@@ -173,7 +173,7 @@ def _init(data_dict, params):
         # have at least one cluster
         if cluster_init == 0:
             cluster_init = 1
-        _, label = kmeans2(data, cluster_init, minit='random')
+        _, label = kmeans2(data, cluster_init, minit='points')
         phi_init = np.zeros((N,T,1))
         for k in range(N):
            phi_init[k,label[k]] = 1
