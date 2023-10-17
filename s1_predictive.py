@@ -38,7 +38,7 @@ it_counter = np.array(range(1,params.max_iterations+1))
 predictive = np.zeros((MC_runs, params.max_iterations), dtype='float')
 predictive_converged_it = np.zeros(MC_runs, dtype='int')
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.2, 3.5), sharey=True)
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.2, 3.5))
 fig.suptitle(r'Convergence of the Predictive Distribution for $\alpha = 5$', y=0.94)
 ax1.set_ylabel("Predictive")
 ax1.set_xlabel("Number of iterations")
@@ -156,10 +156,10 @@ predictive_converged_it_avg = np.mean(predictive_converged_it)
                                 loc = predictive_converged_it_avg,\
                                 scale = st.sem(predictive_converged_it, axis=0))
 
-ax1.plot(it_counter, predictive_avg, color='m', label="One Cluster")
-ax1.fill_between(it_counter, ci_min1, ci_max1, color='m', alpha=.1)
-ax1.axvline(x=predictive_converged_it_avg, color='m', linestyle='--')
-ax1.axvspan(ci_min2, ci_max2, alpha=0.1, color='m')
+ax2.plot(it_counter, predictive_avg, color='m', label="One Cluster")
+ax2.fill_between(it_counter, ci_min1, ci_max1, color='m', alpha=.1)
+ax2.axvline(x=predictive_converged_it_avg, color='m', linestyle='--')
+ax2.axvspan(ci_min2, ci_max2, alpha=0.1, color='m')
 
 #%% Simulate kmeans initialization 
 params.init_type = "Kmeans"
@@ -179,10 +179,10 @@ predictive_converged_it_avg = np.mean(predictive_converged_it)
                                 loc = predictive_converged_it_avg,\
                                 scale = st.sem(predictive_converged_it, axis=0))
 
-ax2.plot(it_counter, predictive_avg, color='y', label="KMeans")
-ax2.fill_between(it_counter, ci_min1, ci_max1, color='y', alpha=.1)
-ax2.axvline(x=predictive_converged_it_avg, color='y', linestyle='--')
-ax2.axvspan(ci_min2, ci_max2, alpha=0.1, color='y')
+ax1.plot(it_counter, predictive_avg, color='y', label="KMeans")
+ax1.fill_between(it_counter, ci_min1, ci_max1, color='y', alpha=.1)
+ax1.axvline(x=predictive_converged_it_avg, color='y', linestyle='--')
+ax1.axvspan(ci_min2, ci_max2, alpha=0.1, color='y')
 
 #%% Simulate dbscan initialization
 params.init_type = "DBSCAN"

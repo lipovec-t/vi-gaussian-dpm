@@ -83,6 +83,9 @@ def compute_predictive(data, gamma, tau, sigma):
     -------
 
     """
+    
+    # NOTE: THE CALCULATION OF THE PREDICTIVE IS PROBABLY NOT CORRECT!
+    
     T = gamma.shape[0]
     
     # compute estimate of the cluster weights
@@ -98,7 +101,7 @@ def compute_predictive(data, gamma, tau, sigma):
     temp = temp * pi_est[:,np.newaxis]
     temp = np.sum(temp, axis=0)
     # compute average log predictive
-    predictive = np.mean(np.log(temp))
+    predictive = np.sum(np.log(temp))
          
     return predictive
 
