@@ -77,23 +77,14 @@ def generate_data(params):
         y = x
         indicator_array, cluster_assignments, cluster_means = [], [], []
     
-    # held out dataset
-    # use first 50 data points for CAVI and rest as held out data
-    split_index = 50
-    x_pred = x[split_index:, :]
-    x = x[0:split_index, :]
-    y_pred = y[split_index:, :]
-    y = y[0:split_index, :]
         
     data = {
-        "True Cluster Indicators"       : indicator_array[:split_index],
-        "True Cluster Assignments"      : cluster_assignments[:split_index,:split_index],
+        "True Cluster Indicators"       : indicator_array,
+        "True Cluster Assignments"      : cluster_assignments,
         "True Cluster Means"            : cluster_means,
         "True Number of Clusters"       : cluster_means.shape[0],
         "Datapoints"                    : x,
-        "Datapoints Held Out"           : x_pred,
         "Noisy Datapoints"              : y,
-        "Noisy Datapoints Held Out"     : y_pred
         }
     return data 
 

@@ -48,8 +48,7 @@ ax2.set_xlabel("Number of iterations")
 params.init_type = "uniform"
 for i in tqdm(range(MC_runs), desc='(1/8) Uniform Init '):
     data_dict = generate_data(params)
-    data = data_dict["Noisy Datapoints"]
-    elbo[i, :], elbo_converged_it[i], _, _, _, _, _ = coordinates_ascent(data_dict, params)
+    elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
     
 # average results
 elbo_avg = np.mean(elbo, axis=0)
@@ -71,8 +70,7 @@ ax2.axvspan(ci_min2, ci_max2, alpha=0.1, color='b')
 params.init_type = "true"
 for i in tqdm(range(MC_runs), desc='(2/8) True Init    '):
     data_dict = generate_data(params)
-    data = data_dict["Noisy Datapoints"]
-    elbo[i, :], elbo_converged_it[i], _, _, tau, gamma, phi = coordinates_ascent(data_dict, params)
+    elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
 
 # average results
 elbo_avg = np.mean(elbo, axis=0)
@@ -94,8 +92,7 @@ ax1.axvspan(ci_min2, ci_max2, alpha=0.1, color='b')
 params.init_type = "permute"
 for i in tqdm(range(MC_runs), desc='(3/8) Permute Init '):
     data_dict = generate_data(params)
-    data = data_dict["Noisy Datapoints"]
-    elbo[i, :], elbo_converged_it[i], _, _, tau, gamma, phi = coordinates_ascent(data_dict, params)
+    elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
 
 # average results
 elbo_avg = np.mean(elbo, axis=0)
@@ -118,8 +115,7 @@ ax1.axvspan(ci_min2, ci_max2, alpha=0.1, color='r')
 params.init_type = "unique"
 for i in tqdm(range(MC_runs), desc='(4/8) Unique Init  '):
     data_dict = generate_data(params)
-    data = data_dict["Noisy Datapoints"]
-    elbo[i, :], elbo_converged_it[i], _, _, tau, gamma, phi = coordinates_ascent(data_dict, params)
+    elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
 
 # average results
 elbo_avg = np.mean(elbo, axis=0)
@@ -142,8 +138,7 @@ ax1.axvspan(ci_min2, ci_max2, alpha=0.1, color='c')
 params.init_type = "AllInOne"
 for i in tqdm(range(MC_runs), desc='(5/8) AllInOne Init'):
     data_dict = generate_data(params)
-    data = data_dict["Noisy Datapoints"]
-    elbo[i, :], elbo_converged_it[i], _, _, tau, gamma, phi = coordinates_ascent(data_dict, params)
+    elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
 
 # average results
 elbo_avg = np.mean(elbo, axis=0)
@@ -166,8 +161,7 @@ ax1.axvspan(ci_min2, ci_max2, alpha=0.1, color='m')
 params.init_type = "Kmeans"
 for i in tqdm(range(MC_runs), desc='(6/8) KMeans Init  '):
     data_dict = generate_data(params)
-    data = data_dict["Noisy Datapoints"]
-    elbo[i, :], elbo_converged_it[i], _, _, tau, gamma, phi = coordinates_ascent(data_dict, params)
+    elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
 
 # average results
 elbo_avg = np.mean(elbo, axis=0)
@@ -190,8 +184,7 @@ ax2.axvspan(ci_min2, ci_max2, alpha=0.1, color='y')
 params.init_type = "DBSCAN"
 for i in tqdm(range(MC_runs), desc='(7/8) DBSCAN Init  '):
     data_dict = generate_data(params)
-    data = data_dict["Noisy Datapoints"]
-    elbo[i, :], elbo_converged_it[i], _, _, tau, gamma, phi = coordinates_ascent(data_dict, params)
+    elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
 
 # average results
 elbo_avg = np.mean(elbo, axis=0)
@@ -214,8 +207,7 @@ ax2.axvspan(ci_min2, ci_max2, alpha=0.1, color='k')
 params.init_type = "global"
 for i in tqdm(range(MC_runs), desc='(8/8) Global Init  '):
     data_dict = generate_data(params)
-    data = data_dict["Noisy Datapoints"]
-    elbo[i, :], elbo_converged_it[i], _, _, tau, gamma, phi = coordinates_ascent(data_dict, params)
+    elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
     
 # average results
 elbo_avg = np.mean(elbo, axis=0)
