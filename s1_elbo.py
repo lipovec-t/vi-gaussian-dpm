@@ -29,6 +29,7 @@ plt.rcParams.update(plot_params)
 
 #%% CAVI - Convergence Analyzation
 MC_runs = 500
+T = 30
 alpha = 5
 params.alpha_DPM = alpha
 params.alpha     = alpha
@@ -46,6 +47,7 @@ ax2.set_xlabel("Number of iterations")
 
 #%% Simulate uniform initialization 
 params.init_type = "uniform"
+params.T = T
 for i in tqdm(range(MC_runs), desc='(1/8) Uniform Init '):
     data_dict = generate_data(params)
     elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
@@ -68,6 +70,7 @@ ax2.axvspan(ci_min2, ci_max2, alpha=0.1, color='b')
 
 #%% Simulate true initialization 
 params.init_type = "true"
+params.T = T
 for i in tqdm(range(MC_runs), desc='(2/8) True Init    '):
     data_dict = generate_data(params)
     elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
@@ -90,6 +93,8 @@ ax1.axvspan(ci_min2, ci_max2, alpha=0.1, color='b')
 
 #%% Simulate permute initialization 
 params.init_type = "permute"
+params.num_permutations = 10
+params.T = T
 for i in tqdm(range(MC_runs), desc='(3/8) Permute Init '):
     data_dict = generate_data(params)
     elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
@@ -136,6 +141,7 @@ ax1.axvspan(ci_min2, ci_max2, alpha=0.1, color='c')
 
 #%% Simulate allinone initialization
 params.init_type = "AllInOne"
+params.T = T
 for i in tqdm(range(MC_runs), desc='(5/8) AllInOne Init'):
     data_dict = generate_data(params)
     elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
@@ -159,6 +165,7 @@ ax1.axvspan(ci_min2, ci_max2, alpha=0.1, color='m')
 
 #%% Simulate kmeans initialization 
 params.init_type = "Kmeans"
+params.T = T
 for i in tqdm(range(MC_runs), desc='(6/8) KMeans Init  '):
     data_dict = generate_data(params)
     elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
@@ -182,6 +189,7 @@ ax2.axvspan(ci_min2, ci_max2, alpha=0.1, color='y')
 
 #%% Simulate dbscan initialization
 params.init_type = "DBSCAN"
+params.T = T
 for i in tqdm(range(MC_runs), desc='(7/8) DBSCAN Init  '):
     data_dict = generate_data(params)
     elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
@@ -205,6 +213,7 @@ ax2.axvspan(ci_min2, ci_max2, alpha=0.1, color='k')
 
 #%% Simulate global initialization 
 params.init_type = "global"
+params.T = T
 for i in tqdm(range(MC_runs), desc='(8/8) Global Init  '):
     data_dict = generate_data(params)
     elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
@@ -227,7 +236,7 @@ ax2.axvline(x=elbo_converged_it_avg, color='brown', linestyle='--')
 ax2.axvspan(ci_min2, ci_max2, alpha=0.1, color='brown')
 
 #%% Set plot properties and save fig as pdf
-xlim = 40
+xlim = 30
 ax1.set_xlim((1,xlim))
 ax1.xaxis.set_minor_locator(MultipleLocator(1))
 ax1.grid()

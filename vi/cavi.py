@@ -33,7 +33,6 @@ def coordinates_ascent(data_dict, params):
         phi_init        = _init(data_dict, params)
         # multiple phi initializations are saved in the 3rd dim of phi_init
         num_permutations = phi_init.shape[2]
-        num_permutations = 1
     elif params.init_type.lower() == 'global':
         tau_init = np.zeros((T,K+1))
         gamma_init = np.zeros((T,2))
@@ -52,7 +51,7 @@ def coordinates_ascent(data_dict, params):
     else:
         data = data_dict["Datapoints"]
     
-    elbo = np.zeros(max_iterations)
+    elbo_converged = -np.inf
     
     for j in range(num_permutations):
         # init variational parameters in correct order
@@ -67,7 +66,8 @@ def coordinates_ascent(data_dict, params):
                                   lamda, sigma, sigma_inv)
             
         elbo_is_converged = False
-        elbo_converged_it = max_iterations
+        elbo_converged_it = max_iterations - 1
+        elbo = np.zeros(max_iterations)
         
         for i in range(max_iterations):
             # compute variational updates in correct order
@@ -93,13 +93,19 @@ def coordinates_ascent(data_dict, params):
                 tau = tau_temp
                 gamma = gamma_temp
                 phi = phi_temp
-            elif i == (max_iterations-1) and not elbo_is_converged:
-                print(f"ELBO is not converged for {params.init_type}")
-                tau = tau_temp
-                gamma = gamma_temp
-                phi = phi_temp
             
-    return elbo, elbo_converged_it, tau, gamma, phi
+            # save elbo in final iteration
+            if i == (max_iterations-1):
+                if elbo[elbo_converged_it] > elbo_converged:
+                    elbo_final = elbo
+                    elbo_converged = elbo[elbo_converged_it]
+                if not elbo_is_converged:
+                    print(f"ELBO is not converged for {params.init_type}")
+                    tau = tau_temp
+                    gamma = gamma_temp
+                    phi = phi_temp
+            
+    return elbo_final, elbo_converged_it, tau, gamma, phi
 
 def _init(data_dict, params):
     # truncation parameter and number of data points
@@ -129,8 +135,6 @@ def _init(data_dict, params):
         for j in range(num_perm):
             for k in range(N):
                phi_init[k,rand_indicators[j][k],j] = 1
-        # choose one of the permutations - just for this scenario
-        phi_init = np.expand_dims(phi_init[:,:,1],2)
     elif params.init_type.lower() == 'unique':
         params.T = N
         phi_init = np.eye(N)
@@ -143,7 +147,7 @@ def _init(data_dict, params):
             for k in range(N):
                 phi_init[k,rand_indicators[j],j] = 1
         # choose one of the permutations - just for this scenario
-        phi_init = np.expand_dims(phi_init[:,:,0],2)
+        # phi_init = np.expand_dims(phi_init[:,:,0],2)
     elif params.init_type.lower() == 'kmeans':
         # round mean of poisson prior to nearest int
         cluster_init = round(params.alpha * np.log((params.alpha+N)/params.alpha))

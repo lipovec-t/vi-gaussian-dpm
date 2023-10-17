@@ -70,7 +70,7 @@ class Params:
     alpha = 1
     
     # Truncation parameter
-    T = 30
+    T = 20
     
     # Relative change of ELBO for convergence
     eps = 1e-2
@@ -88,4 +88,4 @@ class Params:
     # DBSCAN    - Use hard assignments of dbscan
     init_type = 'Unique'
     # Number of initial permuations used when init_type = 'permute'
-    num_permutations = 20 # only for random permuated initialization
+    num_permutations = 10 # only for random permuated initialization
