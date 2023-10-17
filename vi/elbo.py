@@ -84,6 +84,9 @@ def compute_predictive(data, gamma, tau, sigma):
     -------
 
     """
+    
+    # Note: The calculation of the predictive is probably not correct!
+    
     T = gamma.shape[0]
     
     # compute estimate of the cluster weights
