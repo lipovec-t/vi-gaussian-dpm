@@ -36,7 +36,7 @@ for (alpha, seed) in zip(alphaArray, seedArray):
     params.alpha     = alpha
     data_dict = generate_data(params)
     data = data_dict["Noisy Datapoints"]
-    _, _, _, _, tau, gamma, phi = coordinates_ascent(data_dict, params)
+    _, _, tau, gamma, phi = coordinates_ascent(data_dict, params)
     
     # Postprocessing
     results, results_reduced =\

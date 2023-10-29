@@ -127,6 +127,8 @@ def _init(data_dict, params):
         phi_init = np.zeros((N,T,1))
         true_assignment = data_dict["True Cluster Assignments"]
         T_true = true_assignment.shape[1]
+        # params.T = T_true
+        # phi_init = np.zeros((N,T_true,1))
         phi_init[:,:T_true,0] = true_assignment
     elif params.init_type.lower() == 'permute':
         num_perm = params.num_permutations
@@ -160,7 +162,7 @@ def _init(data_dict, params):
            phi_init[k,label[k]] = 1
     elif params.init_type.lower() == 'dbscan':
         data_transformed = StandardScaler().fit_transform(data)
-        db = DBSCAN(eps=0.7, min_samples=7).fit(data_transformed)
+        db = DBSCAN(eps=0.3, min_samples=3).fit(data_transformed)
         label = db.labels_
         n_noise = list(label).count(-1)
         n_clusters = len(set(label)) - (1 if -1 in label else 0)

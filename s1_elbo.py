@@ -39,11 +39,10 @@ it_counter = np.array(range(1,params.max_iterations+1))
 elbo = np.zeros((MC_runs, params.max_iterations), dtype='float')
 elbo_converged_it = np.zeros(MC_runs, dtype='int')
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.2, 3.5), sharey=True)
-fig.suptitle(r'Convergence of the ELBO for $\alpha = 5$', y=0.94)
-ax1.set_ylabel("ELBO")
-ax1.set_xlabel("Number of iterations")
-ax2.set_xlabel("Number of iterations")
+elbo_avg_array = np.zeros((8,params.max_iterations))
+elbo_converged_it_avg_array = np.zeros(8)
+ci_elbo_array = np.zeros((8,2,params.max_iterations))
+ci_it_array = np.zeros((8,2))
 
 #%% Simulate uniform initialization 
 params.init_type = "uniform"
@@ -53,20 +52,15 @@ for i in tqdm(range(MC_runs), desc='(1/8) Uniform Init '):
     elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
     
 # average results
-elbo_avg = np.mean(elbo, axis=0)
-elbo_converged_it_avg = np.mean(elbo_converged_it)
+elbo_avg_array[0,:] = np.mean(elbo, axis=0)
+elbo_converged_it_avg_array[0] = np.mean(elbo_converged_it)
 # 95% confidence interval
-(ci_min1, ci_max1) = st.t.interval(confidence = 0.95, df = elbo.shape[0]-1,\
-                                loc = elbo_avg,\
+(ci_elbo_array[0,0,:], ci_elbo_array[0,1,:]) = st.t.interval(confidence = 0.95, df = elbo.shape[0]-1,\
+                                loc = elbo_avg_array[0,:],\
                                 scale = st.sem(elbo, axis=0))
-(ci_min2, ci_max2) = st.t.interval(confidence = 0.95, df = elbo_converged_it.shape[0]-1,\
-                                loc = elbo_converged_it_avg,\
+(ci_it_array[0,0], ci_it_array[0,1]) = st.t.interval(confidence = 0.95, df = elbo_converged_it.shape[0]-1,\
+                                loc = elbo_converged_it_avg_array[0],\
                                 scale = st.sem(elbo_converged_it, axis=0))
-# plot results
-ax2.plot(it_counter, elbo_avg, color='b', label="Uniform")
-ax2.fill_between(it_counter, ci_min1, ci_max1, color='b', alpha=.1)
-ax2.axvline(x=elbo_converged_it_avg, color='b', linestyle='--')
-ax2.axvspan(ci_min2, ci_max2, alpha=0.1, color='b')
 
 #%% Simulate true initialization 
 params.init_type = "true"
@@ -76,20 +70,15 @@ for i in tqdm(range(MC_runs), desc='(2/8) True Init    '):
     elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
 
 # average results
-elbo_avg = np.mean(elbo, axis=0)
-elbo_converged_it_avg = np.mean(elbo_converged_it)
+elbo_avg_array[1,:] = np.mean(elbo, axis=0)
+elbo_converged_it_avg_array[1] = np.mean(elbo_converged_it)
 # 95% confidence interval
-(ci_min1, ci_max1) = st.t.interval(confidence = 0.95, df = elbo.shape[0]-1,\
-                                loc = elbo_avg,\
+(ci_elbo_array[1,0,:], ci_elbo_array[1,1,:]) = st.t.interval(confidence = 0.95, df = elbo.shape[0]-1,\
+                                loc = elbo_avg_array[1,:],\
                                 scale = st.sem(elbo, axis=0))
-(ci_min2, ci_max2) = st.t.interval(confidence = 0.95, df = elbo_converged_it.shape[0]-1,\
-                                loc = elbo_converged_it_avg,\
+(ci_it_array[1,0], ci_it_array[1,1]) = st.t.interval(confidence = 0.95, df = elbo_converged_it.shape[0]-1,\
+                                loc = elbo_converged_it_avg_array[1],\
                                 scale = st.sem(elbo_converged_it, axis=0))
-# plot results
-ax1.plot(it_counter, elbo_avg, color='g', label="True")
-ax1.fill_between(it_counter, ci_min1, ci_max1, color='b', alpha=.1)
-ax1.axvline(x=elbo_converged_it_avg, color='g', linestyle='--')
-ax1.axvspan(ci_min2, ci_max2, alpha=0.1, color='b')
 
 #%% Simulate permute initialization 
 params.init_type = "permute"
@@ -100,21 +89,16 @@ for i in tqdm(range(MC_runs), desc='(3/8) Permute Init '):
     elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
 
 # average results
-elbo_avg = np.mean(elbo, axis=0)
-elbo_converged_it_avg = np.mean(elbo_converged_it)
+elbo_avg_array[2,:] = np.mean(elbo, axis=0)
+elbo_converged_it_avg_array[2] = np.mean(elbo_converged_it)
 # 95% confidence interval
-(ci_min1, ci_max1) = st.t.interval(confidence = 0.95, df = elbo.shape[0]-1,\
-                                loc = elbo_avg,\
+# 95% confidence interval
+(ci_elbo_array[2,0,:], ci_elbo_array[2,1,:]) = st.t.interval(confidence = 0.95, df = elbo.shape[0]-1,\
+                                loc = elbo_avg_array[2,:],\
                                 scale = st.sem(elbo, axis=0))
-(ci_min2, ci_max2) = st.t.interval(confidence = 0.95, df = elbo_converged_it.shape[0]-1,\
-                                loc = elbo_converged_it_avg,\
+(ci_it_array[2,0], ci_it_array[2,1]) = st.t.interval(confidence = 0.95, df = elbo_converged_it.shape[0]-1,\
+                                loc = elbo_converged_it_avg_array[2],\
                                 scale = st.sem(elbo_converged_it, axis=0))
-
-# plot results    
-ax1.plot(it_counter, elbo_avg, color='r', label="Random")
-ax1.fill_between(it_counter, ci_min1, ci_max1, color='r', alpha=.1)
-ax1.axvline(x=elbo_converged_it_avg, color='r', linestyle='--')
-ax1.axvspan(ci_min2, ci_max2, alpha=0.1, color='r')
 
 #%% Simulate unique initialization 
 params.init_type = "unique"
@@ -123,21 +107,15 @@ for i in tqdm(range(MC_runs), desc='(4/8) Unique Init  '):
     elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
 
 # average results
-elbo_avg = np.mean(elbo, axis=0)
-elbo_converged_it_avg = np.mean(elbo_converged_it)
+elbo_avg_array[3,:] = np.mean(elbo, axis=0)
+elbo_converged_it_avg_array[3] = np.mean(elbo_converged_it)
 # 95% confidence interval
-(ci_min1, ci_max1) = st.t.interval(confidence = 0.95, df = elbo.shape[0]-1,\
-                                loc = elbo_avg,\
+(ci_elbo_array[3,0,:], ci_elbo_array[3,1,:]) = st.t.interval(confidence = 0.95, df = elbo.shape[0]-1,\
+                                loc = elbo_avg_array[3,:],\
                                 scale = st.sem(elbo, axis=0))
-(ci_min2, ci_max2) = st.t.interval(confidence = 0.95, df = elbo_converged_it.shape[0]-1,\
-                                loc = elbo_converged_it_avg,\
+(ci_it_array[3,0], ci_it_array[3,1]) = st.t.interval(confidence = 0.95, df = elbo_converged_it.shape[0]-1,\
+                                loc = elbo_converged_it_avg_array[3],\
                                 scale = st.sem(elbo_converged_it, axis=0))
-
-# plot results    
-ax1.plot(it_counter, elbo_avg, color='c', label="Unique")
-ax1.fill_between(it_counter, ci_min1, ci_max1, color='c', alpha=.1)
-ax1.axvline(x=elbo_converged_it_avg, color='c', linestyle='--')
-ax1.axvspan(ci_min2, ci_max2, alpha=0.1, color='c')
 
 #%% Simulate allinone initialization
 params.init_type = "AllInOne"
@@ -147,21 +125,15 @@ for i in tqdm(range(MC_runs), desc='(5/8) AllInOne Init'):
     elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
 
 # average results
-elbo_avg = np.mean(elbo, axis=0)
-elbo_converged_it_avg = np.mean(elbo_converged_it)
+elbo_avg_array[4,:] = np.mean(elbo, axis=0)
+elbo_converged_it_avg_array[4] = np.mean(elbo_converged_it)
 # 95% confidence interval
-(ci_min1, ci_max1) = st.t.interval(confidence = 0.95, df = elbo.shape[0]-1,\
-                                loc = elbo_avg,\
+(ci_elbo_array[4,0,:], ci_elbo_array[4,1,:]) = st.t.interval(confidence = 0.95, df = elbo.shape[0]-1,\
+                                loc = elbo_avg_array[4,:],\
                                 scale = st.sem(elbo, axis=0))
-(ci_min2, ci_max2) = st.t.interval(confidence = 0.95, df = elbo_converged_it.shape[0]-1,\
-                                loc = elbo_converged_it_avg,\
+(ci_it_array[4,0], ci_it_array[4,1]) = st.t.interval(confidence = 0.95, df = elbo_converged_it.shape[0]-1,\
+                                loc = elbo_converged_it_avg_array[4],\
                                 scale = st.sem(elbo_converged_it, axis=0))
-
-# plot results    
-ax1.plot(it_counter, elbo_avg, color='m', label="One Cluster")
-ax1.fill_between(it_counter, ci_min1, ci_max1, color='m', alpha=.1)
-ax1.axvline(x=elbo_converged_it_avg, color='m', linestyle='--')
-ax1.axvspan(ci_min2, ci_max2, alpha=0.1, color='m')
 
 #%% Simulate kmeans initialization 
 params.init_type = "Kmeans"
@@ -171,21 +143,15 @@ for i in tqdm(range(MC_runs), desc='(6/8) KMeans Init  '):
     elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
 
 # average results
-elbo_avg = np.mean(elbo, axis=0)
-elbo_converged_it_avg = np.mean(elbo_converged_it)
+elbo_avg_array[5,:] = np.mean(elbo, axis=0)
+elbo_converged_it_avg_array[5] = np.mean(elbo_converged_it)
 # 95% confidence interval
-(ci_min1, ci_max1) = st.t.interval(confidence = 0.95, df = elbo.shape[0]-1,\
-                                loc = elbo_avg,\
+(ci_elbo_array[5,0,:], ci_elbo_array[5,1,:]) = st.t.interval(confidence = 0.95, df = elbo.shape[0]-1,\
+                                loc = elbo_avg_array[5,:],\
                                 scale = st.sem(elbo, axis=0))
-(ci_min2, ci_max2) = st.t.interval(confidence = 0.95, df = elbo_converged_it.shape[0]-1,\
-                                loc = elbo_converged_it_avg,\
+(ci_it_array[5,0], ci_it_array[5,1]) = st.t.interval(confidence = 0.95, df = elbo_converged_it.shape[0]-1,\
+                                loc = elbo_converged_it_avg_array[5],\
                                 scale = st.sem(elbo_converged_it, axis=0))
-
-# plot results   
-ax2.plot(it_counter, elbo_avg, color='y', label="KMeans")
-ax2.fill_between(it_counter, ci_min1, ci_max1, color='y', alpha=.1)
-ax2.axvline(x=elbo_converged_it_avg, color='y', linestyle='--')
-ax2.axvspan(ci_min2, ci_max2, alpha=0.1, color='y')
 
 #%% Simulate dbscan initialization
 params.init_type = "DBSCAN"
@@ -195,21 +161,15 @@ for i in tqdm(range(MC_runs), desc='(7/8) DBSCAN Init  '):
     elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
 
 # average results
-elbo_avg = np.mean(elbo, axis=0)
-elbo_converged_it_avg = np.mean(elbo_converged_it)
+elbo_avg_array[6,:] = np.mean(elbo, axis=0)
+elbo_converged_it_avg_array[6] = np.mean(elbo_converged_it)
 # 95% confidence interval
-(ci_min1, ci_max1) = st.t.interval(confidence = 0.95, df = elbo.shape[0]-1,\
-                                loc = elbo_avg,\
+(ci_elbo_array[6,0,:], ci_elbo_array[6,1,:]) = st.t.interval(confidence = 0.95, df = elbo.shape[0]-1,\
+                                loc = elbo_avg_array[6,:],\
                                 scale = st.sem(elbo, axis=0))
-(ci_min2, ci_max2) = st.t.interval(confidence = 0.95, df = elbo_converged_it.shape[0]-1,\
-                                loc = elbo_converged_it_avg,\
+(ci_it_array[6,0], ci_it_array[6,1]) = st.t.interval(confidence = 0.95, df = elbo_converged_it.shape[0]-1,\
+                                loc = elbo_converged_it_avg_array[6],\
                                 scale = st.sem(elbo_converged_it, axis=0))
-
-# plot results 
-ax2.plot(it_counter, elbo_avg, color='k', label="DBSCAN")
-ax2.fill_between(it_counter, ci_min1, ci_max1, color='k', alpha=.1)
-ax2.axvline(x=elbo_converged_it_avg, color='k', linestyle='--')
-ax2.axvspan(ci_min2, ci_max2, alpha=0.1, color='k')
 
 #%% Simulate global initialization 
 params.init_type = "global"
@@ -219,32 +179,49 @@ for i in tqdm(range(MC_runs), desc='(8/8) Global Init  '):
     elbo[i, :], elbo_converged_it[i], _, _, _ = coordinates_ascent(data_dict, params)
     
 # average results
-elbo_avg = np.mean(elbo, axis=0)
-elbo_converged_it_avg = np.mean(elbo_converged_it)
+elbo_avg_array[7,:] = np.mean(elbo, axis=0)
+elbo_converged_it_avg_array[7] = np.mean(elbo_converged_it)
 # 95% confidence interval
-(ci_min1, ci_max1) = st.t.interval(confidence = 0.95, df = elbo.shape[0]-1,\
-                                loc = elbo_avg,\
+(ci_elbo_array[7,0,:], ci_elbo_array[7,1,:]) = st.t.interval(confidence = 0.95, df = elbo.shape[0]-1,\
+                                loc = elbo_avg_array[7,:],\
                                 scale = st.sem(elbo, axis=0))
-(ci_min2, ci_max2) = st.t.interval(confidence = 0.95, df = elbo_converged_it.shape[0]-1,\
-                                loc = elbo_converged_it_avg,\
+(ci_it_array[7,0], ci_it_array[7,1]) = st.t.interval(confidence = 0.95, df = elbo_converged_it.shape[0]-1,\
+                                loc = elbo_converged_it_avg_array[7],\
                                 scale = st.sem(elbo_converged_it, axis=0))
-    
-# plot results   
-ax2.plot(it_counter, elbo_avg, color='brown', label="Global")
-ax2.fill_between(it_counter, ci_min1, ci_max1, color='brown', alpha=.1)
-ax2.axvline(x=elbo_converged_it_avg, color='brown', linestyle='--')
-ax2.axvspan(ci_min2, ci_max2, alpha=0.1, color='brown')
 
-#%% Set plot properties and save fig as pdf
+#%% plot results
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7, 3.5), sharey=True)
+fig.suptitle(r'Convergence of the ELBO for $\alpha = 5$', y=0.94)
+ax1.set_ylabel("Average ELBO")
+ax1.set_xlabel("Number of iterations")
+ax2.set_xlabel("Number of iterations")
+
+label_array = ['Uniform', 'True', 'Random', 'Unique',\
+               'One Cluster', 'KMeans', 'DBSCAN', 'Global'] 
+
+color_array = ['purple', 'green', 'red', 'blue']
+for i,j in enumerate([4,1,6,3]):
+    ax1.plot(it_counter, elbo_avg_array[j,:], color=color_array[i], label=label_array[j])
+    ax1.fill_between(it_counter, ci_elbo_array[j,0,:], ci_elbo_array[j,1,:], color=color_array[i], alpha=.1)
+    ax1.axvline(x=elbo_converged_it_avg_array[j], color=color_array[i], linestyle='--')
+    ax1.axvspan(ci_it_array[j,0], ci_it_array[j,1], alpha=0.1, color=color_array[i])
+
+color_array = ['orange', 'olive', 'lightseagreen', 'brown'] 
+for i,j in enumerate([0,5,2,7]):
+    ax2.plot(it_counter, elbo_avg_array[j,:], color=color_array[i], label=label_array[j])
+    ax2.fill_between(it_counter, ci_elbo_array[j,0,:], ci_elbo_array[j,1,:], color=color_array[i], alpha=.1)
+    ax2.axvline(x=elbo_converged_it_avg_array[j], color=color_array[i], linestyle='--')
+    ax2.axvspan(ci_it_array[j,0], ci_it_array[j,1], alpha=0.1, color=color_array[i])
+
 xlim = 30
 ax1.set_xlim((1,xlim))
 ax1.xaxis.set_minor_locator(MultipleLocator(1))
 ax1.grid()
-ax1.legend(loc = 'center right')
+ax1.legend(loc = 'center right', framealpha=1)
 ax2.set_xlim((1,xlim))
 ax2.xaxis.set_minor_locator(MultipleLocator(1))
 ax2.grid()
-ax2.legend(loc = 'center right')
+ax2.legend(loc = 'center right', framealpha=1)
 fig.tight_layout()
 
 plt.savefig("results/convergence_elbo.pdf", format="pdf", bbox_inches="tight")

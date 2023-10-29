@@ -76,7 +76,7 @@ class Params:
     eps = 1e-2
     
     # Max iterations performed if convergence criterion is not met
-    max_iterations = 100
+    max_iterations = 80
     
     # Initiallization type:
     # Uniform   - assign all datapoints equally likely to clusters
