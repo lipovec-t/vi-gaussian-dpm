@@ -46,12 +46,15 @@ class Params:
     lamda[-1] = 1/lamda1_temp[0,0]
     lamda[:-1] = lamda[-1]*mu_G
     # alpha = alpha_DPM - set by simulation script
+    # If true, parameters for base distribution will be derived from data,
+    # i.e., lamdas will be overwritten
+    # data_driven_base_dist = True 
     
     # Truncation parameter
     T = 20
     
     # Relative change of ELBO for convergence
-    eps = 1e-2
+    eps = 1e-3
     
     # Max iterations performed if convergence criterion is not met
     max_iterations = 100

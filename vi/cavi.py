@@ -26,12 +26,32 @@ def coordinates_ascent(data_dict, params):
     sigma_G         = params.sigma_G
     lamda           = params.lamda
     eps             = params.eps
+    K               = params.K
+    
+    data_driven_base_dist = params.data_driven_base_dist
     
     # extract data from data_dict
     if params.include_noise:
         data = data_dict["Noisy Datapoints"]
     else:
         data = data_dict["Datapoints"]
+    
+    # extract parameters of base distribution from data
+    if data_driven_base_dist == True:
+        # Misspecfiy Sigma
+        # sigma = params.sigma / 2
+        # sigma_inv = np.linalg.inv(sigma)
+        # Compute base dist parameters from data
+        mu_G = np.median(data,axis=0)
+        max_var = np.max(np.var(data,axis=0))
+        if  max_var == 0:
+            sigma_G = 0.001 * np.eye(K)
+        else:
+            sigma_G = max_var * np.eye(K)
+        lamda = np.empty(K+1)
+        lamda1_temp = np.matmul(sigma_inv, sigma_G)
+        lamda[-1] = 1/lamda1_temp[0,0]
+        lamda[:-1] = lamda[-1]*mu_G
     
     # multiple phi initializations are saved in the 3rd dim of phi_init
     num_permutations = phi_init.shape[2]
