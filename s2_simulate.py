@@ -6,6 +6,7 @@ import os
 # Third party imports
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator
 import scipy.stats as st
 from tqdm import tqdm
 
@@ -32,7 +33,7 @@ params.data_driven_base_dist = False
 # set object count and number of MC runs
 N_array = np.arange(1,51)
 num_N = len(N_array)
-MC_runs = 500
+MC_runs = 333
 
 # Store MSE for each CAVI run
 MSE_x = np.zeros((N_array.size, MC_runs, num_alpha))
@@ -123,7 +124,7 @@ runtime_max = np.max(runtime,  axis=1)
                                 loc = runtime_avg,\
                                 scale = st.sem(runtime, axis=1))
 # Figure for runtime plot
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(4.5, 3))
 
 # Plot average runtime 
 ax.plot(N_array, runtime_avg, color='k', label='Average')
@@ -131,14 +132,25 @@ ax.plot(N_array, runtime_min, linestyle='dashed', color='k', label='Minimum')
 ax.plot(N_array, runtime_max, linestyle='dotted', color='k', label='Maximum')
 
 # Plot confidence interval
-label = r'$95\%$ CI'
-ax.fill_between(N_array, ci_min, ci_max, color='k', alpha=.1, label=label)
+# label = r'$95\%$ CI'
+ax.fill_between(N_array, ci_min, ci_max, color='k', alpha=.1)
 
 # Plot settings
+ax.set_xlim((1,50))
+ax.set_xticks([1, 10, 20, 30, 40, 50])
+ax.xaxis.set_minor_locator(MultipleLocator(1))
 ax.set_yscale('log')
-plt.xlabel('Number of objects')
-plt.ylabel('Runtime in Seconds')
-plt.legend()
+plt.xlabel('$N$')
+plt.ylabel('Runtime in seconds')
+plt.legend(fontsize = 'xx-small')
+# Shrink current axis by 20%
+box = ax.get_position()
+ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+# Put a legend to the right of the current axis
+ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+plt.grid()
+plt.tight_layout()
+plt.savefig("results/runtime.pdf", format="pdf", bbox_inches="tight")
 
 #%% Analyze and plot MSE 
 fig, ax = plt.subplots()
