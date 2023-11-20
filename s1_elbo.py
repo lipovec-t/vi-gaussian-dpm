@@ -202,16 +202,16 @@ label_array = ['Uniform', 'True', 'Random', 'Unique',\
 color_array = ['purple', 'green', 'red', 'blue']
 for i,j in enumerate([4,1,6,3]):
     ax1.plot(it_counter, elbo_avg_array[j,:], color=color_array[i], label=label_array[j])
-    ax1.fill_between(it_counter, ci_elbo_array[j,0,:], ci_elbo_array[j,1,:], color=color_array[i], alpha=.1)
+    ax1.fill_between(it_counter, ci_elbo_array[j,0,:], ci_elbo_array[j,1,:], color=color_array[i], alpha=.22)
     ax1.axvline(x=elbo_converged_it_avg_array[j], color=color_array[i], linestyle='--')
-    ax1.axvspan(ci_it_array[j,0], ci_it_array[j,1], alpha=0.1, color=color_array[i])
+    ax1.axvspan(ci_it_array[j,0], ci_it_array[j,1], alpha=0.22, color=color_array[i])
 
 color_array = ['orange', 'olive', 'lightseagreen', 'brown'] 
 for i,j in enumerate([0,5,2,7]):
     ax2.plot(it_counter, elbo_avg_array[j,:], color=color_array[i], label=label_array[j])
-    ax2.fill_between(it_counter, ci_elbo_array[j,0,:], ci_elbo_array[j,1,:], color=color_array[i], alpha=.1)
+    ax2.fill_between(it_counter, ci_elbo_array[j,0,:], ci_elbo_array[j,1,:], color=color_array[i], alpha=.22)
     ax2.axvline(x=elbo_converged_it_avg_array[j], color=color_array[i], linestyle='--')
-    ax2.axvspan(ci_it_array[j,0], ci_it_array[j,1], alpha=0.1, color=color_array[i])
+    ax2.axvspan(ci_it_array[j,0], ci_it_array[j,1], alpha=0.22, color=color_array[i])
 
 xlim = 30
 ax1.set_xlim((1,xlim))
