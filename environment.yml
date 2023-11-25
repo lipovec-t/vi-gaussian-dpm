@@ -220,6 +220,7 @@ dependencies:
   - toml=0.10.2=pyhd3eb1b0_0
   - tomlkit=0.11.1=py311hecd8cb5_0
   - tornado=6.3.3=py311h6c40b1e_0
+  - tqdm=4.65.0=py311h85bffb1_0
   - traitlets=5.7.1=py311hecd8cb5_0
   - tzdata=2023c=h04d1e81_0
   - ujson=5.4.0=py311hcec6c5f_0
