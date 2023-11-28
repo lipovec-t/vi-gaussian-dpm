@@ -1,4 +1,4 @@
-# Variational Inference with Gaussian Dirichlet Process Mixtures
+# Coordinate Ascent Variational Inference for Dirichlet Process Mixtures of Gaussians
 
 ## Model
 $$x_n = \theta_n + u_n$$
@@ -52,7 +52,7 @@ $$
 \end{align}
 $$
 
-## CAVI
+## CAVI for DPM models
 Mean field approximation of the posterior with variational parameters $\gamma_t$, $\tau_t$ and $\phi_n$:
 
 $$q(v,\eta^*,z) = \prod_{t=1}^{T-1}q_{\gamma_t}(v_t) \prod_{t=1}^{T}q_{\tau_t}(\eta_t^\*) \prod_{n=1}^{N}q_{\phi_n}(z_n)$$
@@ -65,3 +65,24 @@ Following parameters have to be choosen for initialization:
 - Assignment probabilities $\phi_{nt}$
 
 We use synthetic data $x$, that is produced using the data package of the project, to learn the posterior distribution $q(v,\eta^\*,z)$ of the model explained above. Given the posterior one can then estimate cluster means $\theta_l^*$, cluster assignments $z_n$ and cluster weights $\pi_l$ using well known estimators like the MMSE/MAP estimator. Note that the marginal distributions to do so are already obtained as output from the algorithm.
+
+## References
+<a id="1">[1]</a> 
+T. Lipovec,
+“Variational Inference for Dirichlet Process Mixtures and Application to Gaussian Estimation,”
+Master’s thesis, TU Wien, 2023.
+
+<a id="1">[2]</a> 
+E. Šauša,
+“Advanced Bayesian Estimation in Hierarchical Gaussian Models: Dirichlet Process Mixtures and Clustering Gain,”
+Master’s thesis, TU Wien, 2024.
+
+<a id="1">[3]</a> 
+D. M. Blei and M. I. Jordan, 
+“Variational Inference for Dirichlet Process Mixtures,” 
+Bayesian Analysis, vol. 1, no. 1, pp. 121-143, 2006.
+
+<a id="1">[4]</a>
+D. M. Blei, A. Kucukelbir, and J. D. McAuliffe,
+“Variational Inference: A Review for Statisticians,”
+Journal of the American Statistical Association, vol. 112, no. 518, pp. 859-877, 2018.
