@@ -1,7 +1,18 @@
 # Coordinate Ascent Variational Inference for Dirichlet Process Mixtures of Gaussians
 
-## Model
-$$x_n = \theta_n + u_n$$
+## Overview
+This Github repository contains the implementation of Coordinate Ascent Variational Inference (CAVI) for the Gaussian estimation problem described in <a id="1">[1]</a> and <a id="1">[2]</a>, which is summarized below. The implementation was used to generate the results presented in <a id="1">[1]</a> and is based on <a id="1">[3]</a>.
+
+## Features
+* Coordinate Ascent Variational Inference: The implementation focuses on the CAVI algorithm, a variational inference method known for its efficiency in approximating posterior distributions.
+* Dirichlet Process Mixtures of Gaussians: The code supports the modeling of complex data structures through the use of Dirichlet Process Mixtures, allowing for automatic determination of the number of clusters. The mixture distribution is assumed to be Gaussian.
+* Scalable and Extendable: The code is designed to handle large datasets efficiently. Customization and experimentation with different priors, likelihoods, and hyperparameters is possible through the modification of the corresponding equations in the vi module.
+
+## Model Summary for the Estimation Problem
+For details see <a id="1">[1]</a> and <a id="1">[2]</a>.
+
+### Object features
+$$x_n = \theta_n + u_n, \quad n=1,\ldots,N$$
 
 with $G_0 = \mathcal{N}\\!\left(\mu_G, \Sigma_G\right)$ and
 
@@ -65,6 +76,23 @@ Following parameters have to be choosen for initialization:
 - Assignment probabilities $\phi_{nt}$
 
 We use synthetic data $x$, that is produced using the data package of the project, to learn the posterior distribution $q(v,\eta^\*,z)$ of the model explained above. Given the posterior one can then estimate cluster means $\theta_l^*$, cluster assignments $z_n$ and cluster weights $\pi_l$ using well known estimators like the MMSE/MAP estimator. Note that the marginal distributions to do so are already obtained as output from the algorithm.
+
+## Usage
+To run the code follow these steps:
+1. Clone the repository
+```
+git clone https://github.com/lipovec-t/vi-gaussian-dpm.git
+```
+2. Install dependencies
+```
+pip install -r requirements.txt
+```
+3. Run one of the simulation scripts s*_simulate.py in the IDE of your choice.
+
+Customize the simulation scripts to your specific use case and adapt config files as needed.
+
+
+Feel free to use, modify, and extend this implementation for your research or applications. If you encounter any issues or have suggestions, please let us know through the GitHub issues page.
 
 ## References
 <a id="1">[1]</a> 
