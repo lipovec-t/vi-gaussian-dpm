@@ -12,59 +12,68 @@ This Github repository contains the implementation of Coordinate Ascent Variatio
 For details see <a id="1">[1]</a> and <a id="1">[2]</a>.
 
 ### Object features
-$$x_n = \theta_n + u_n, \quad n=1,\ldots,N$$
+We consider a Gaussian model for objects that are indexed by $n=1,\ldots,N$, where $N$ is the total number of objects.
+Each object is described by a random feature vector $x_n \in \mathbb{R}^M$, which depends on a random local parameter vector $\theta_n \in \mathbb{R}^M$ through the equation
+$$x_n = \theta_n + u_n, \quad n=1,\ldots,N.$$
 
-with $G_0 = \mathcal{N}\\!\left(\mu_G, \Sigma_G\right)$ and
+Using the assumption $u_n \sim \mathcal{N}\\!\left(u_n;0, \Sigma_u\right)$ if follows that
+
+$$
+f(x_n|\theta_n) = \mathcal{N}\\!\left(x_n|\theta_n, \Sigma_u\right).
+$$
+
+### Dirichlet Process
+The local parameters $\theta_n$ are assumed to be distributed according to a Dirichlet process (DP):
 
 $$
 \begin{align}
-u_n &\sim \mathcal{N}\\!\left(0, \Sigma_u\right)\\
-G &\sim \text{DP}(G_0, \alpha)\\
-\theta_n | G &\sim G\\
+&G \sim \text{DP}(G_0, \alpha),\\
+&\theta_n | G \sim G(\theta_n|\pi,\theta^\ast_{1:\infty}),
 \end{align}
 $$
 
-This yields a mixture distribution in the form of
+with base distribution $G_0(\theta_k^\ast) = \mathcal{N}\\!\left(\mu_{\theta^\*}, \Sigma_{\theta^\ast}\right)$.
+The realization $G$ of the DP is given by
 
 $$
-f(x_n|G) = \sum_{l=1}^\infty \pi_l \\; \mathcal{N}\\!\left(x_n;\theta_l^*, \Sigma_u\right)
+G(\theta_n|\pi,\theta^\ast_{1:\infty}) = \sum_{k=1}^{\infty} \pi_k \delta(\theta_n-\theta_k^\ast). 
 $$
 
-where the mixture weights $\pi_l$ and the Gaussian cluster means $\theta_l^*$ are determined by the Dirichlet Process (DP).
-The base distribution $G_0$ and mixands $f(x_n|\theta_l^\*) = \mathcal{N}\\!\left(x_n;\theta_l^\*, \Sigma_u\right)$ form a conjugate model and can be formulated in the exponential family framework as
+### Measurements
+The $n$-th measurement (observation) $y_n \in \mathbb{R}^M$ is an altered version of the object feature $x_n$ corrupted by additive noise:
+$$y_n = x_n + v_n, \quad n=1,\ldots,N,$$
+where $v_n \sim \mathcal{N}\\!\left(v_n;0, \Sigma_v\right)$ and thus
 
 $$
-\begin{align}
-f(x_n|\eta_l^\*) &= h(x_n) \cdot \exp\left(\eta_l^{*T} x_n - a(\eta_l^\*)\right)\\
-f(\eta_l^\*;\lambda_1, \lambda_2) &= b \exp\left(\lambda_1^T \eta_l^\*- \lambda_2 a(\eta_l^\*)\right)
-\end{align}
+f(y_n|x_n) = \mathcal{N}\\!\left(y_n|x_n, \Sigma_v\right).
 $$
 
-with natural parameter $\eta_l^* = \Sigma_u^{-1} \theta_l^*$  and hyperparameters $\lambda_1$ and $\lambda_2$ satisfying following relation
+Moreover, $y_n = \theta_n + u_n + v_n$, which entails that
 
 $$
-\begin{align}
-\mu_{\eta_l^\*} &= \Sigma_u^{-1} \mu_G = \frac{1}{\lambda_2} \Sigma_u^{-1} \lambda_1\\
-\Sigma_{\eta_l^\*} &= \Sigma_u^{-1} \Sigma_G \Sigma_u^{-1} = \frac{1}{\lambda_2} \Sigma_u^{-1},
-\end{align}
+f(x_n|\theta_n) = \mathcal{N}\\!\left(y_n|\theta_n, \Sigma_u + \Sigma_v\right).
 $$
 
-i.e., given $\mu_G$, $\Sigma_G$ and $\Sigma_u$ the hyperparameters are automatically determined. Note that the natural parameter $\eta_l^\* = \Sigma_u^{-1} \theta_l^\*$ is again Gaussian with $\mu_{\eta_l^\*}$ and $\Sigma_{\eta_l^\*}$ because it is in linear relation with $\theta_l^\*$.
-
-Random cluster assignments are denoted as $z_n$ and are  i.i.d. distributed with a Categorical distribution (Multinomial with a single draw) where the probability of each category is given by the mixing weights $\pi_l$. The assignment variable $z_n$ indicates with which mixture component the data point $x_n$ is associated. Using the stick-breaking view the data can be described as arising from the following process:
+### Dirichlet Process Mixture
+The above model assumptions yield a mixture distribution for the object features and measurements in the form of
 
 $$
-\begin{align}
-  v_i &\sim \text{Beta}(1,\alpha)\\
-  \eta_l^\* &\sim  G_0\\
-  \pi_l &= v_i \prod_{j=1}^{l-1}(1-v_j)\\
-  z_n | \pi &\sim \text{Mult}(1,\pi)\\
-  x_n | z_n,\eta^\* &\sim f(x_n|\eta_{z_n}^\*)
-\end{align}
+f(x_n|G) = \sum_{k=1}^\infty \pi_k \\; \mathcal{N}\\!\left(x_n;\theta_k^\ast, \Sigma_u\right)
 $$
+
+and 
+
+$$
+f(y_n|G) = \sum_{k=1}^\infty \pi_k \\; \mathcal{N}\\!\left(x_n;\theta_k^\ast, \Sigma_u + \Sigma_v\right).
+$$
+
+Here, the mixture weights $\pi_k$ and the component means $\theta_k^\ast$ are determined by the DP.
+The base distribution $G_0$ of the DP, and the mixands of the mixture, form a conjugate model and can be formulated in the exponential family framework.
+
+Assignments of objects to mixture components are denoted as $z_n$ and can be modeled i.i.d. with a Categorical distribution (Multinomial with a single draw) where the probability of each object category (class) is given by the mixing weights $\pi_k$.
 
 ## CAVI for DPM models
-Mean field approximation of the posterior with variational parameters $\gamma_t$, $\tau_t$ and $\phi_n$:
+Truncated mean field approximation of the posterior with variational parameters $\gamma_t$, $\tau_t$ and $\phi_n$:
 
 $$q(v,\eta^*,z) = \prod_{t=1}^{T-1}q_{\gamma_t}(v_t) \prod_{t=1}^{T}q_{\tau_t}(\eta_t^\*) \prod_{n=1}^{N}q_{\phi_n}(z_n)$$
 
