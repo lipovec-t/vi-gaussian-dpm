@@ -8,7 +8,7 @@ This Github repository contains the implementation of Coordinate Ascent Variatio
 * Dirichlet Process Mixtures of Gaussians: The code supports the modeling of complex data structures through the use of Dirichlet Process Mixtures, allowing for automatic determination of the number of clusters. The mixture distribution is assumed to be Gaussian.
 * Scalable and Extendable: The code is designed to handle large datasets efficiently. Customization and experimentation with different priors, likelihoods, and hyperparameters is possible through the modification of the corresponding equations in the vi module.
 
-## Model Summary for the Estimation Problem
+## Model Summary of the Estimation Problem
 For details see <a id="1">[1]</a> and <a id="1">[2]</a>.
 
 ### Object features
@@ -67,24 +67,65 @@ $$
 f(y_n|G) = \sum_{k=1}^\infty \pi_k \\; \mathcal{N}\\!\left(x_n;\theta_k^\ast, \Sigma_u + \Sigma_v\right).
 $$
 
-Here, the mixture weights $\pi_k$ and the component means $\theta_k^\ast$ are determined by the DP.
+The mixture weights $\pi_k$ and the component means $\theta_k^\ast$ are determined by the DP.
 The base distribution $G_0$ of the DP, and the mixands of the mixture, form a conjugate model and can be formulated in the exponential family framework.
 
 Assignments of objects to mixture components are denoted as $z_n$ and can be modeled i.i.d. with a Categorical distribution (Multinomial with a single draw) where the probability of each object category (class) is given by the mixing weights $\pi_k$.
 
-## CAVI for DPM models
-Truncated mean field approximation of the posterior with variational parameters $\gamma_t$, $\tau_t$ and $\phi_n$:
+## CAVI and Approximate Inference
+The implemented CAVI algorithm uses a truncated mean field approximation of the true posterior of the DPM. This approximate posterior is referred to as the variational pdf and is parameterized by the variational parameters $\gamma_t$, $\tau_t$ and $\phi_n$:
 
-$$q(v,\eta^*,z) = \prod_{t=1}^{T-1}q_{\gamma_t}(v_t) \prod_{t=1}^{T}q_{\tau_t}(\eta_t^\*) \prod_{n=1}^{N}q_{\phi_n}(z_n)$$
+$$
+q(v,\eta^*,z) = \prod_{t=1}^{T-1} q_{t}(v_t;\gamma_t) \prod_{t=1}^{T} q_{t}(\eta_t^\ast;\tau_t) \prod_{n=1}^{N} q_{n}(z_n;\phi_n),
+$$
+
+where
+
+$$
+q_{t}(v_t;\gamma_t) = \mathcal{B}(v_t;\gamma_{t,1},\gamma_{t,2})
+$$
+
+is a Beta distribution,
+
+$$
+q_{t}(\eta_t^\ast;\tau_t) \propto \exp \big(\tau_{t,1}^{\mathrm{T}}  \eta_t^\ast - \tau_{t,2} a(\eta_t^\ast)\big)
+$$
+
+is a Gaussian distribution in exponential family form and
+
+$$
+q_{n}(z_n;\phi_n) = \mathcal{C}(z_n;\phi_n)
+$$
+
+is a Categorical distribution.
+Here, $v_t$ denotes auxiliary variables of the stick-breaking construction of the DP and $\eta_t^\ast$ is a linearly transformed version of $\theta_t^\ast$.
+
+The variational parameters are given by
+
+$$
+1=1,
+$$
+
+with 
+
+$$
+1=1.
+$$
+
+The CAVI algorithm approximates the posterior by calculating the variational parameters of the variational distribution in an interative manner. Convergence is declared when the relative change of the evidence lower bound falls below a predefined threshold.
 
 Following parameters have to be choosen for initialization:
-- Concentration Parameter $\alpha$
-- Mean $\mu_G$ and variance $\Sigma_G$ of the base distribution
-- Cluster variance $\Sigma_u$
+- Concentration Parameter $\alpha$ of the DP
+- Mean $\mu_G$ and variance $\Sigma_G$ of the base distribution of the DP
+- Variance $\Sigma_u$ 
 - Truncation parameter $T$
 - Assignment probabilities $\phi_{nt}$
 
-We use synthetic data $x$, that is produced using the data package of the project, to learn the posterior distribution $q(v,\eta^\*,z)$ of the model explained above. Given the posterior one can then estimate cluster means $\theta_l^*$, cluster assignments $z_n$ and cluster weights $\pi_l$ using well known estimators like the MMSE/MAP estimator. Note that the marginal distributions to do so are already obtained as output from the algorithm.
+The measurements $y_n$ (or $x_n$ if no noise is assumed), $n=1,\ldots,N$, are provided by the data module of the project. They can be generated or given by a file.
+
+Given the approximate posterior, the means $\theta_k^*$ of the mixands, cluster assignments $z_n$ and cluster weights $\pi_k$ are determined by using approximate MMSE/MAP estimators. Note that the marginal distributions to do so are already obtained as output from the CAVI algorithm. The final cluster means and cluster assignments are used to calculate MMSE estimates of the object features $x_n$ from the noisy measurements $y_n$.
+
+For details see Chapter 5 of <a id="1">[1]</a>.
 
 ## Usage
 To run the code follow these steps:
