@@ -1,11 +1,11 @@
 # Coordinate Ascent Variational Inference for Dirichlet Process Mixtures of Gaussians
 
 ## Overview
-This Github repository contains the implementation of Coordinate Ascent Variational Inference (CAVI) for the Gaussian estimation problem described in <a id="1">[1]</a> and <a id="1">[2]</a>, which is summarized below. The implementation was used to generate the results presented in <a id="1">[1]</a> and is based on <a id="1">[3]</a>.
+This Github repository contains the implementation of Coordinate Ascent Variational Inference (CAVI) for the Gaussian estimation problem described in <a id="1">[1]</a> and <a id="1">[2]</a>, which is briefly summarized below. The implementation was used to generate the results presented in <a id="1">[1]</a> and is based on <a id="1">[3]</a>.
 
 ## Features
-* Coordinate Ascent Variational Inference: The implementation focuses on the CAVI algorithm, a variational inference method known for its efficiency in approximating posterior distributions.
-* Dirichlet Process Mixtures of Gaussians: The code supports the modeling of complex data structures through the use of Dirichlet Process Mixtures, allowing for automatic determination of the number of clusters. The mixture distribution is assumed to be Gaussian.
+* Coordinate Ascent Variational Inference Algorithm: The implementation focuses on the CAVI algorithm, a variational inference method known for its efficiency in approximating posterior distributions.
+* Dirichlet Process Mixtures of Gaussians: The code supports the modeling of complex data structures through the use of Dirichlet Process Mixtures, allowing for automatic determination of the number of clusters in the observations. The mixture distribution is assumed to be Gaussian.
 * Scalable and Extendable: The code is designed to handle large datasets efficiently. Customization and experimentation with different priors, likelihoods, and hyperparameters is possible through the modification of the corresponding equations in the vi module.
 
 ## Model Summary of the Estimation Problem
@@ -16,14 +16,16 @@ We consider a Gaussian model for objects that are indexed by $n=1,\ldots,N$, whe
 Each object is described by a random feature vector $x_n \in \mathbb{R}^M$, which depends on a random local parameter vector $\theta_n \in \mathbb{R}^M$ through the equation
 $$x_n = \theta_n + u_n, \quad n=1,\ldots,N.$$
 
-Using the assumption $u_n \sim \mathcal{N}\\!\left(u_n;0, \Sigma_u\right)$ if follows that
+Using the assumption $u_n \sim \mathcal{N}\\!\left(u_n;0, \Sigma_u\right)$, it follows that
 
 $$
-f(x_n|\theta_n) = \mathcal{N}\\!\left(x_n|\theta_n, \Sigma_u\right).
+f(x_n|\theta_n) = \mathcal{N}\\!\left(x_n|\theta_n, \Sigma_u\right),
 $$
+
+which is the conditional pdf of $x_n$ given $\theta_n$.
 
 ### Dirichlet Process
-The local parameters $\theta_n$ are assumed to be distributed according to a Dirichlet process (DP):
+The local parameters $\theta_n$ are assumed to be distributed according to a discrete pdf $G$ that is realized from a Dirichlet process (DP):
 
 $$
 \begin{align}
@@ -38,6 +40,8 @@ The realization $G$ of the DP is given by
 $$
 G(\theta_n|\pi,\theta^\ast_{1:\infty}) = \sum_{k=1}^{\infty} \pi_k \delta(\theta_n-\theta_k^\ast). 
 $$
+
+The so called global parameters $\theta_k^\ast$ are i.i.d. according to the base distribution $G_0$ and the weights $\pi_k$ are obtained from a stick-breaking process.
 
 ### Measurements
 The $n$-th measurement (observation) $y_n \in \mathbb{R}^M$ is an altered version of the object feature $x_n$ corrupted by additive noise:
@@ -55,7 +59,7 @@ f(x_n|\theta_n) = \mathcal{N}\\!\left(y_n|\theta_n, \Sigma_u + \Sigma_v\right).
 $$
 
 ### Dirichlet Process Mixture
-The above model assumptions yield a mixture distribution for the object features and measurements in the form of
+The above model assumptions yield a Dirichlet process mixture (DPM) distribution for the object features $x_n$ and measurements $y_n$ in the form of
 
 $$
 f(x_n|G) = \sum_{k=1}^\infty \pi_k \\; \mathcal{N}\\!\left(x_n;\theta_k^\ast, \Sigma_u\right)
@@ -67,13 +71,17 @@ $$
 f(y_n|G) = \sum_{k=1}^\infty \pi_k \\; \mathcal{N}\\!\left(x_n;\theta_k^\ast, \Sigma_u + \Sigma_v\right).
 $$
 
-The mixture weights $\pi_k$ and the component means $\theta_k^\ast$ are determined by the DP.
+The mixture weights $\pi_k$ and the component means $\theta_k^\ast$ follow from the DP.
 The base distribution $G_0$ of the DP, and the mixands of the mixture, form a conjugate model and can be formulated in the exponential family framework.
-
 Assignments of objects to mixture components are denoted as $z_n$ and can be modeled i.i.d. with a Categorical distribution (Multinomial with a single draw) where the probability of each object category (class) is given by the mixing weights $\pi_k$.
 
+Goal is to estimate the assignments $z_n$, the global parameters $\theta_k^\ast$ and the weights $\pi_k$ either from directly observed object features $x_n$, or from noisy measurements $y_n$.
+If noise is assumed, it is also possible to subsequently estimate the features $x_n$ from the measurements $y_n$ given estimates for the assignments $z_n$ and global parameters $\theta_k^\ast$.
+The whole estimation problem is explained in detail in Chapter 5 of <a id="1">[1]</a>.
+
 ## CAVI and Approximate Inference
-The implemented CAVI algorithm uses a truncated mean field approximation of the true posterior of the DPM. This approximate posterior is referred to as the variational pdf and is parameterized by the variational parameters $\gamma_t$, $\tau_t$ and $\phi_n$:
+The implemented CAVI algorithm uses a mean field variational family to approximate the true posterior of the DPM.
+This approximate posterior involves a truncated stick-breaking representation of the above model (truncated at level $T$) and is referred to as the variational pdf. It is parameterized by the variational parameters $\gamma_t$, $\tau_t$ and $\phi_n$:
 
 $$
 q(v,\eta^*,z) = \prod_{t=1}^{T-1} q_{t}(v_t;\gamma_t) \prod_{t=1}^{T} q_{t}(\eta_t^\ast;\tau_t) \prod_{n=1}^{N} q_{n}(z_n;\phi_n),
@@ -103,29 +111,35 @@ Here, $v_t$ denotes auxiliary variables of the stick-breaking construction of th
 The variational parameters are given by
 
 $$
-1=1,
+\begin{align}
+&\gamma_{t,1} = 1 + \sum_{n=1}^{N} \phi_{n,t},\\
+&\gamma_{t,2} = \alpha + \sum_{n=1}^{N} \sum_{j=t+1}^{T} \phi_{n,j},\\
+&\tau_{t,1} = \lambda_1 + \sum_{n=1}^{N} \phi_{n,t} y_n,\\
+&\tau_{t,2} = \lambda_2  + \sum_{n=1}^{N} \phi_{n,t},\\
+&\phi_{n,t} = \frac{\exp(S_{n,t})}{\sum\limits_{j=1}^T \exp(S_{n,j})},\\
+\end{align}
 $$
 
 with 
 
 $$
-1=1.
+S_{n,t} = \frac{1}{\tau_{t,2}} \tau_{t,1}^{\mathrm{T}} (\Sigma_{u} + \Sigma_{v})^{-1} y_n - \frac{1}{2 \tau_{t,2}^2} \left(M \tau_{t,2} + \tau_{t,1}^{\mathrm{T}} (\Sigma_{u} + \Sigma_{v})^{-1} \tau_{t,1}\right) + \Psi(\gamma_{t,1}) - \Psi(\gamma_{t,1} + \gamma_{t,2}) + \sum_{j=1}^{t-1} \Psi(\gamma_{j,2}) - \Psi(\gamma_{j,1} + \gamma_{j,2}).
 $$
 
-The CAVI algorithm approximates the posterior by calculating the variational parameters of the variational distribution in an interative manner. Convergence is declared when the relative change of the evidence lower bound falls below a predefined threshold.
+The CAVI algorithm approximates the true posterior pdf by calculating the variational parameters of the variational pdf in an interative manner. Convergence is declared when the relative change of the evidence lower bound falls below a predefined threshold.
 
 Following parameters have to be choosen for initialization:
-- Concentration Parameter $\alpha$ of the DP
-- Mean $\mu_G$ and variance $\Sigma_G$ of the base distribution of the DP
+- Concentration parameter $\alpha$ of the DP
+- Mean $\mu_{\theta^\*}$ and variance $\Sigma_{\theta^\ast}$ of the base distribution $G_0$ of the DP
 - Variance $\Sigma_u$ 
 - Truncation parameter $T$
 - Assignment probabilities $\phi_{nt}$
 
 The measurements $y_n$ (or $x_n$ if no noise is assumed), $n=1,\ldots,N$, are provided by the data module of the project. They can be generated or given by a file.
 
-Given the approximate posterior, the means $\theta_k^*$ of the mixands, cluster assignments $z_n$ and cluster weights $\pi_k$ are determined by using approximate MMSE/MAP estimators. Note that the marginal distributions to do so are already obtained as output from the CAVI algorithm. The final cluster means and cluster assignments are used to calculate MMSE estimates of the object features $x_n$ from the noisy measurements $y_n$.
+Given the approximate posterior, the means $\theta_k^*$ of the mixands, cluster assignments $z_n$ and cluster weights $\pi_k$ are determined by using approximate MMSE/MAP estimators in a postprocessing step (see postprocessing part of the vi module). Note that the marginal distributions to do so are already obtained as output from the CAVI algorithm. The final cluster means and cluster assignments are used to calculate MMSE estimates of the object features $x_n$ from the noisy measurements $y_n$.
 
-For details see Chapter 5 of <a id="1">[1]</a>.
+For details see Chapter 4 and Chapter 5 of <a id="1">[1]</a>.
 
 ## Usage
 To run the code follow these steps:
@@ -143,6 +157,9 @@ Customize the simulation scripts to your specific use case and adapt config file
 
 
 Feel free to use, modify, and extend this implementation for your research or applications. If you encounter any issues or have suggestions, please let us know through the GitHub issues page.
+
+## License
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## References
 <a id="1">[1]</a> 
